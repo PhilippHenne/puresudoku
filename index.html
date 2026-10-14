@@ -1,0 +1,2144 @@
+<!DOCTYPE html>
+<html lang="en" class="dark"><head><script data-bard-client-injected="true">(function(firebaseConfig, initialAuthToken, appId) {
+        window.__firebase_config = firebaseConfig;
+        window.__initial_auth_token = initialAuthToken;
+        window.__app_id = appId;
+            })("\n{\n  \"apiKey\": \"AIzaSyCqyCcs2R2e7AegGjvFAwG98wlamtbHvZY\",\n  \"authDomain\": \"bard-frontend.firebaseapp.com\",\n  \"projectId\": \"bard-frontend\",\n  \"storageBucket\": \"bard-frontend.firebasestorage.app\",\n  \"messagingSenderId\": \"175205271074\",\n  \"appId\": \"1:175205271074:web:2b7bd4d34d33bf38e6ec7b\"\n}\n","eyJhbGciOiJSUzI1NiIsImtpZCI6IjExNjRiNzdiNDMzZDdhMDAyMWI4NjE4YjhjYTU3ZTMyZGI5MWUxMTMiLCJ0eXAiOiJKV1QifQ.eyJzdWIiOiJmaXJlYmFzZS1hZG1pbnNkay1mYnN2Y0BiYXJkLWZyb250ZW5kLmlhbS5nc2VydmljZWFjY291bnQuY29tIiwiYXVkIjoiaHR0cHM6Ly9pZGVudGl0eXRvb2xraXQuZ29vZ2xlYXBpcy5jb20vZ29vZ2xlLmlkZW50aXR5LmlkZW50aXR5dG9vbGtpdC52MS5JZGVudGl0eVRvb2xraXQiLCJ1aWQiOiIxMzQzNzU3MjcwNTc4ODQ1ODg1OCIsImlzcyI6ImZpcmViYXNlLWFkbWluc2RrLWZic3ZjQGJhcmQtZnJvbnRlbmQuaWFtLmdzZXJ2aWNlYWNjb3VudC5jb20iLCJjbGFpbXMiOnsiYXBwSWQiOiJjXzE3MWYyMTEwYzJjZWQ2ZWJfaW5kZXguaHRtbC01NDAifSwiZXhwIjoxNzkyMDE0NDEzLCJpYXQiOjE3OTIwMTA4MTMsImFsZyI6IlJTMjU2In0.kXsP09RI346bahvss9U4Wy3ihehHFGp_J2ZGuRqDV7hRj-6dxeHHVpcLS5KKqIxgSejPE7aox-3SdRlIXoilM0a8P-n4dLMRx6ppcbo85WLpXA6q9Hl7OF7msOau-0FY9cGr7-eZWcAHPoIAPnr-eiQFck4JFLusYDQuuw-QfNjwNyvxayeZvc5VdqliUourdi6jUR4-b7khEiGjSbxeG4pYWdOm2lkr-OeSSfs78Qh83OXaeD2D9uXflGextXokk2muIT4Qluw2loSaNlHDGV1YuuiJxeR6mOgGQYkbYiIS_XRlt6pCTwwNxJPtc52_IxU8MCrCRkxY8IB29a_gjg","c_171f2110c2ced6eb_index.html-540")</script><script data-bard-client-injected="true">
+  document.addEventListener('input', (event) => {
+    if (event.target && (event.target.isContentEditable || event.target.hasAttribute('contenteditable'))) {
+      const clonedDoc = document.cloneNode(true);
+      const injectedScripts = clonedDoc.querySelectorAll('[data-bard-client-injected="true"]');
+      injectedScripts.forEach(el => el.remove());
+      window.parent.postMessage({
+        type: 'inlineEdit',
+        html: '<!DOCTYPE html>\n' + clonedDoc.documentElement.outerHTML
+      }, '*');
+    }
+  });
+</script><script data-bard-client-injected="true">(function(){'use strict';window.addEventListener("message",a=>{a.data&&a.data.type==="SUPPLEMENTAL_DATA_UPDATE"&&window.dispatchEvent(new CustomEvent("supplementaldataupdate",{detail:a.data.data}))});}).call(this);
+</script><script data-bard-client-injected="true">(function() {
+  const SCROLL_KEYS = new Set([
+    'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
+    ' ', 'Spacebar', 'PageUp', 'PageDown', 'Home', 'End',
+  ]);
+  const HORIZONTAL_KEYS = new Set(['ArrowLeft', 'ArrowRight']);
+
+  function isTextEntryTarget(target) {
+    if (!target) return false;
+    const tagName = target.tagName;
+    return tagName === 'INPUT' || tagName === 'TEXTAREA' ||
+        tagName === 'SELECT' || target.isContentEditable === true;
+  }
+
+  // An element absorbs the key only if it both overflows on the axis being
+  // scrolled and is configured to scroll on that axis. The cheap dimension
+  // test runs first because getComputedStyle forces a style recalc, and this
+  // runs on every keypress. Each axis is read from its own longhand: the
+  // 'overflow' shorthand serializes as two values when the axes differ, which
+  // is the common 'overflow-x: hidden; overflow-y: auto' pane.
+  function canScroll(node, horizontal) {
+    const overflows = horizontal ? node.scrollWidth > node.clientWidth
+                                 : node.scrollHeight > node.clientHeight;
+    if (!overflows) return false;
+    const style = window.getComputedStyle(node);
+    const overflow = horizontal ? style.overflowX : style.overflowY;
+    return overflow === 'auto' || overflow === 'scroll';
+  }
+
+  // Walks up from the event target so nested scrollers keep their behavior.
+  // <body> is included because pages that pin the root height make it the
+  // scroll container.
+  function hasScrollableAncestor(target, horizontal) {
+    let node = target;
+    while (node && node !== document.documentElement) {
+      if (canScroll(node, horizontal)) return true;
+      node = node.parentElement;
+    }
+    return false;
+  }
+
+  function rootCanScroll(horizontal) {
+    const scroller = document.scrollingElement || document.documentElement;
+    if (!scroller) return false;
+    // Tolerate a pixel of rounding so subpixel layouts do not look scrollable.
+    return horizontal ? scroller.scrollWidth > window.innerWidth + 1
+                      : scroller.scrollHeight > window.innerHeight + 1;
+  }
+
+  window.addEventListener('keydown', function(event) {
+    if (!SCROLL_KEYS.has(event.key)) return;
+    if (event.defaultPrevented) return;
+    // Alt and Meta turn arrows into browser history navigation, and Ctrl is
+    // reserved for shortcuts, so none of them are scroll intent.
+    if (event.altKey || event.metaKey || event.ctrlKey) return;
+
+    const target = event.target;
+    if (isTextEntryTarget(target)) return;
+
+    // Anything that can still absorb the scroll gets to keep it.
+    const horizontal = HORIZONTAL_KEYS.has(event.key);
+    if (rootCanScroll(horizontal)) return;
+    if (hasScrollableAncestor(target, horizontal)) return;
+
+    event.preventDefault();
+  }, {capture: true, passive: false});
+})();</script><script data-bard-client-injected="true">(function() {
+  // Ensure this script is executed only once
+  if (window.firebaseAuthBridgeScriptLoaded) {
+    return;
+  }
+  window.firebaseAuthBridgeScriptLoaded = true;
+
+  let nextTokenPromiseId = 0;
+
+  // Stores { resolve, reject } for ongoing token requests
+  const pendingTokenPromises = {};
+
+  // Listen for messages from the Host Application
+  window.addEventListener('message', function(event) {
+
+    const messageData = event.data;
+
+  if (messageData && messageData.type === 'RESOLVE_NEW_FIREBASE_TOKEN') {
+      const { success, token, error, promiseId } = messageData ?? {};
+      if (pendingTokenPromises[promiseId]) {
+        if (success) {
+          pendingTokenPromises[promiseId].resolve(token);
+        } else {
+          pendingTokenPromises[promiseId].reject(new Error(error || 'Token refresh failed from host.'));
+        }
+        delete pendingTokenPromises[promiseId];
+      }
+    }
+  });
+
+  // Expose a function for the Generated App to request a new Firebase token
+  window.requestNewFirebaseToken = function() {
+    const currentPromiseId = nextTokenPromiseId++;
+    const promise = new Promise((resolve, reject) => {
+      pendingTokenPromises[currentPromiseId] = { resolve, reject };
+    });
+    if (window.parent && window.parent !== window) {
+      window.parent.postMessage({
+        type: 'REQUEST_NEW_FIREBASE_TOKEN',
+        promiseId: currentPromiseId
+      }, '*');
+    } else {
+      pendingTokenPromises[currentPromiseId].reject(new Error('No parent window to request token from.'));
+      delete pendingTokenPromises[currentPromiseId];
+    }
+    return promise;
+  };
+})();</script><script data-bard-client-injected="true">
+let realOriginalGetUserMedia = null;
+if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+  realOriginalGetUserMedia = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
+}
+
+(function() {
+  if (navigator.mediaDevices && navigator.mediaDevices.__proto__) {
+    try {
+      Object.defineProperty(navigator.mediaDevices.__proto__, 'getUserMedia', {
+        get: function() {
+          return undefined; // Or throw an error
+        },
+        configurable: false
+      });
+    } catch (error) {
+      console.error("Error defining prototype getter:", error);
+    }
+  }
+})();
+
+(function() {
+  const pendingMediaResolvers = {};
+  let nextMediaPromiseId = 0;
+
+  function requestMediaPermissions(constraints) {
+    const mediaPromiseId = nextMediaPromiseId++;
+    const promise = new Promise((resolve, reject) => {
+      pendingMediaResolvers[mediaPromiseId] = (granted) => {
+        delete pendingMediaResolvers[mediaPromiseId];
+        resolve(granted);
+      };
+    });
+
+    window.parent.postMessage({
+      type: 'requestMediaPermission',
+      constraints: constraints,
+      promiseId: mediaPromiseId,
+    }, '*');
+
+    return promise;
+  }
+
+  let originalGetUserMedia = realOriginalGetUserMedia;
+
+  function interceptGetUserMedia() {
+    if (navigator.mediaDevices) {
+      Object.defineProperty(navigator.mediaDevices, 'getUserMedia', {
+        value: function(constraints) {
+          return requestMediaPermissions(constraints).then((granted) => {
+            if (granted) {
+              if (originalGetUserMedia) {
+                return originalGetUserMedia(constraints);
+              } else {
+                throw new Error("Original getUserMedia not available.");
+              }
+            } else {
+              throw new DOMException('Permission denied', 'NotAllowedError');
+            }
+          });
+        },
+        writable: false,
+        configurable: false
+      });
+    }
+  }
+
+  interceptGetUserMedia();
+
+  const observer = new MutationObserver(function(mutationsList, observer) {
+    for (const mutation of mutationsList) {
+      if (mutation.type === 'reconfigured' && mutation.name === 'getUserMedia' && mutation.object === navigator.mediaDevices) {
+        interceptGetUserMedia();
+      } else if (mutation.type === 'attributes' && mutation.attributeName === 'getUserMedia' && mutation.target === navigator.mediaDevices) {
+        interceptGetUserMedia();
+      } else if (mutation.type === 'childList' && mutation.addedNodes) {
+        mutation.addedNodes.forEach(node => {
+          if (node === navigator.mediaDevices) {
+            interceptGetUserMedia();
+          }
+        });
+      }
+    }
+  });
+
+  function interceptSpeechRecognition() {
+    if (!window.SpeechRecognition && !window.webkitSpeechRecognition) {
+      return;
+    }
+
+    const OriginalSpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    const SpeechRecognitionWrapper = function(...args) {
+      const recognizer = new OriginalSpeechRecognition(...args);
+      const originalStart = recognizer.start.bind(recognizer);
+
+      recognizer.start = function() {
+        requestMediaPermissions({ audio: true }).then(granted => {
+          if (granted) {
+            originalStart();
+          } else {
+            const errorEvent = new SpeechRecognitionErrorEvent('error');
+            errorEvent.error = 'not-allowed'; // This is the standard error for permission denial.
+            recognizer.dispatchEvent(errorEvent);
+          }
+        });
+      };
+
+      return recognizer;
+    };
+
+    SpeechRecognitionWrapper.prototype = OriginalSpeechRecognition.prototype;
+    SpeechRecognitionWrapper.prototype.constructor = SpeechRecognitionWrapper;
+
+    if (window.SpeechRecognition) {
+      window.SpeechRecognition = SpeechRecognitionWrapper;
+    }
+    if (window.webkitSpeechRecognition) {
+      window.webkitSpeechRecognition = SpeechRecognitionWrapper;
+    }
+  }
+
+  interceptSpeechRecognition();
+
+  window.addEventListener('message', function(event) {
+    if (event.data) {
+      if (event.data.type === 'resolveMediaPermission') {
+        const { promiseId, granted } = event.data;
+        if (pendingMediaResolvers[promiseId]) {
+          pendingMediaResolvers[promiseId](granted);
+        }
+      }
+    }
+  });
+
+})();</script><script ws-interception-config="{&quot;parentOrigin&quot;:&quot;https://gemini.google.com&quot;,&quot;proxiedDomains&quot;:[]}" data-bard-client-injected="true">(function(){'use strict';var u=typeof Object.defineProperties=="function"?Object.defineProperty:function(b,d,e){if(b==Array.prototype||b==Object.prototype)return b;b[d]=e.value;return b};function v(b){b=["object"==typeof globalThis&&globalThis,b,"object"==typeof window&&window,"object"==typeof self&&self,"object"==typeof global&&global];for(var d=0;d<b.length;++d){var e=b[d];if(e&&e.Math==Math)return e}throw Error("Cannot find global object");}var w=v(this);
+function y(b,d){if(d)a:{var e=w;b=b.split(".");for(var h=0;h<b.length-1;h++){var k=b[h];if(!(k in e))break a;e=e[k]}b=b[b.length-1];h=e[b];d=d(h);d!=h&&d!=null&&u(e,b,{configurable:!0,writable:!0,value:d})}}function z(b){function d(h){return b.next(h)}function e(h){return b.throw(h)}return new Promise(function(h,k){function m(n){n.done?h(n.value):Promise.resolve(n.value).then(d,e).then(m,k)}m(b.next())})}y("globalThis",function(b){return b||w});/*
+
+ Copyright The Closure Library Authors.
+ SPDX-License-Identifier: Apache-2.0
+*/
+function A(b,d){function e(){}e.prototype=d.prototype;b.j=d.prototype;b.prototype=new e;b.prototype.constructor=b;b.h=function(h,k,m){for(var n=Array(arguments.length-2),p=2;p<arguments.length;p++)n[p-2]=arguments[p];return d.prototype[k].apply(h,n)}};function B(b,d,e="*"){function h(a){if(typeof a==="string")return F.encode(a).buffer;if(a instanceof ArrayBuffer)return a.slice(0);if(ArrayBuffer.isView(a))return a.buffer.slice(a.byteOffset,a.byteOffset+a.byteLength);throw Error("Invalid data type");}function k(a){a=h(a);var f={type:"send",data:new Uint8Array(a)},g;(g=r)==null||g.postMessage(f,[a])}function m(){if(!r)throw Error("Data port not captured yet.");r.onmessage=a=>{if(a.data.type==="message"){a=new MessageEvent("message",{data:G.decode(a.data.data)});
+let f;(f=c.onmessage)==null||f.call(c,a);c.dispatchEvent(a)}}}function n(){if(!t)throw Error("Control port not captured yet.");t.onmessage=a=>{switch(a.data.type){case "open":l=1;var f=new Event("open"),g;(g=c.onopen)==null||g.call(c,f);c.dispatchEvent(f);q.forEach(H=>{k(H)});q=[];break;case "close":g=a.data;l=3;g=new CloseEvent("close",{code:g.code,reason:g.reason,wasClean:g.wasClean});(f=c.onclose)==null||f.call(c,g);c.dispatchEvent(g);break;case "error":l=3;f=new Event("error");let x;(x=c.onerror)==
+null||x.call(c,f);c.dispatchEvent(f)}}}function p(a){return z(function*(){var f=new MessageChannel;t=f.port1;var g=new MessageChannel;r=g.port1;n();m();window.parent.postMessage({type:"websocket_open",portOrdering:["control","data"],url:b,protocols:a||[],connectionId:I},e,[f.port2,g.port2])}())}var c=Reflect.construct(EventTarget,[],new.target);c.CONNECTING=0;c.OPEN=1;c.CLOSING=2;c.CLOSED=3;c.url=b;c.binaryType="arraybuffer";c.protocol="";c.i="";var l=0,t=null,r=null,q=[],F=new TextEncoder,G=new TextDecoder;
+c.onopen=null;c.onmessage=null;c.onclose=null;c.onerror=null;Object.defineProperty(c,"readyState",{get:()=>l,enumerable:!0,configurable:!0});Object.defineProperty(c,"bufferedAmount",{get:()=>{var a=0;q.forEach(f=>{a+=typeof f==="string"?f.length:f.byteLength});return a},enumerable:!0,configurable:!0});var I=function(){var a;return((a=globalThis.crypto)==null?0:a.randomUUID)?globalThis.crypto.randomUUID():"xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,f=>{var g=Math.random()*16|0;return(f===
+"x"?g:g&3|8).toString(16)})}();c.send=a=>{if(l===1)a instanceof Blob?a.arrayBuffer().then(f=>{k(f)}):k(a);else if(l===0)if(typeof a==="string")q.push(a);else if(a instanceof ArrayBuffer||ArrayBuffer.isView(a))q.push(h(a));else throw Error("Sending Blob is not supported before the connection is open.");else console.debug("WebSocket send called in CLOSING or CLOSED state; ignored.")};c.close=(a=1E3,f="")=>{if(l!==2&&l!==3){l=2;a={type:"close",code:a,reason:f,wasClean:a===1E3};var g;(g=t)==null||g.postMessage(a)}};
+Promise.resolve().then(()=>p(d));return c}A(B,EventTarget);var C=document.currentScript,D=C==null?void 0:C.getAttribute("ws-interception-config");if(!D)throw Error("WebSocket Interceptor: Missing ws-interception-config attribute in the script tag.");var E=JSON.parse(D);if(!E.parentOrigin||typeof E.parentOrigin!=="string")throw Error("WebSocket Interceptor: Invalid parentOrigin in ws-interception-config");
+(function(b){var d=Object.getOwnPropertyDescriptor(window,"WebSocket");if(!d||d.writable||d.configurable)d=Object.assign(function(e,h){try{let k=(new URL(e)).hostname;if(b.proxiedDomains.some(m=>k===m||k.endsWith(`.${m}`)))return new B(e,h,b.parentOrigin)}catch(k){throw window.parent.postMessage({type:"websocket_blocked",url:e,reason:"blocked_invalid_url"},b.parentOrigin),new DOMException(`WebSocket connection to '${e}' is not allowed in Canvas.`,"SecurityError");}window.parent.postMessage({type:"websocket_blocked",
+url:e,reason:"blocked_domain_not_allowlisted"},b.parentOrigin);throw new DOMException(`WebSocket connection to '${e}' is not allowed in Canvas.`,"SecurityError");},{CONNECTING:0,OPEN:1,CLOSING:2,CLOSED:3}),Object.defineProperty(window,"WebSocket",{value:d,writable:!1,configurable:!1})})({proxiedDomains:E.proxiedDomains||[],parentOrigin:E.parentOrigin});}).call(this);
+</script><script data-bard-client-injected="true">((function(modelInformation) {
+  const originalFetch = window.fetch;
+  // TODO: b/421908508 - Move these out of the script and match all generative AI model calls.
+  let googleLlmBaseApiUrls = [
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.textModelName + ':streamGenerateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.textModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageModelName + ':predict',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageModelName + ':predictLongRunning',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageEditModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.imageTransformModelName + ':generateContent',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.videoModelName + ':predict',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.videoModelName + ':predictLongRunning',
+    'https://generativelanguage.googleapis.com/v1beta/models/' + modelInformation.ttsModelName + ':generateContent',
+  ];
+  modelInformation.deprecatedTextModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+    );
+  });
+  modelInformation.deprecatedImageModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':predict',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':predictLongRunning',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+  modelInformation.deprecatedGenerateImageModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+  modelInformation.deprecatedImageTransformModelNames.forEach((modelName) => {
+    googleLlmBaseApiUrls.push(
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':generateContent',
+      'https://generativelanguage.googleapis.com/v1beta/models/' + modelName + ':streamGenerateContent',
+    );
+  });
+
+  const pendingFetchResolvers = {};
+  let nextPromiseId = 0;
+
+  function handleStringInput(input, optionsArgument) {
+    const actualUrl = input;
+    const fetchCallArgs = [actualUrl, optionsArgument];
+    const effectiveOptions = optionsArgument || {};
+    const bodyForApiKeyCheck = effectiveOptions.body;
+    const bodyForPostMessage = effectiveOptions.body;
+    return { actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage };
+  }
+
+  function handleRequestInput(input, optionsArgument) {
+    const actualUrl = input.url;
+    const fetchCallArgs = [input, optionsArgument];
+    const effectiveOptions = { method: input.method, headers: new Headers(input.headers) };
+    let bodyForApiKeyCheck;
+    let bodyForPostMessage;
+
+    if (optionsArgument) {
+      if (optionsArgument.method) effectiveOptions.method = optionsArgument.method;
+      if (optionsArgument.headers) effectiveOptions.headers = new Headers(optionsArgument.headers);
+      if ('body' in optionsArgument) {
+        bodyForApiKeyCheck = optionsArgument.body;
+        bodyForPostMessage = optionsArgument.body;
+      } else {
+        bodyForApiKeyCheck = undefined;
+        bodyForPostMessage = input.body;
+      }
+    } else {
+      bodyForApiKeyCheck = undefined;
+      bodyForPostMessage = input.body;
+    }
+    return { actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage };
+  }
+
+  window.fetch = function(input, optionsArgument) {
+    let actualUrl;
+    let fetchCallArgs;
+    let effectiveOptions = {};
+    let bodyForApiKeyCheck;
+    let bodyForPostMessage;
+
+    if (typeof input === 'string') {
+      ({actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage} = handleStringInput(input, optionsArgument));
+    } else if (input instanceof Request) {
+      ({actualUrl, fetchCallArgs, effectiveOptions, bodyForApiKeyCheck, bodyForPostMessage} = handleRequestInput(input, optionsArgument));
+    } else {
+      return originalFetch.apply(window, [input, optionsArgument]);
+    }
+
+    effectiveOptions.method = effectiveOptions.method || 'GET';
+    if (!effectiveOptions.headers) {
+      effectiveOptions.headers = new Headers();
+    }
+
+
+    if (typeof actualUrl === 'string' && googleLlmBaseApiUrls.some((url) => actualUrl.startsWith(url))) {
+      let apiKeyIsNull = true;
+
+      const regex = new RegExp("models/([^:]+)");
+      const modelNameMatch = actualUrl.match(regex);
+      const modelName = modelNameMatch ? modelNameMatch[1] : 'unspecified';
+
+
+      try {
+        const urlObject = new URL(actualUrl);  // Use URL object for robust parsing
+        const apiKeyParam = urlObject.searchParams.get('key');
+        if (apiKeyParam) {
+          apiKeyIsNull = false;
+        }
+      } catch (e) {
+        // Continue checks even if URL parsing fails
+      }
+
+      if (apiKeyIsNull && effectiveOptions.headers) {
+        const h = new Headers(effectiveOptions.headers);
+        const apiKeyHeaderValue = h.get('X-API-Key') || h.get('x-api-key');
+        if (apiKeyHeaderValue) {
+          apiKeyIsNull = false;
+          return originalFetch.apply(window, fetchCallArgs);
+        }
+      }
+
+      if (apiKeyIsNull && effectiveOptions.method && ['POST', 'PUT', 'PATCH'].includes(effectiveOptions.method.toUpperCase()) && typeof bodyForApiKeyCheck === 'string') {
+        try {
+          const bodyData = JSON.parse(bodyForApiKeyCheck);
+          if (bodyData && bodyData.apiKey) {
+            apiKeyIsNull = false;
+            return originalFetch.apply(window, fetchCallArgs);
+          }
+        } catch (e) {
+          // Ignore JSON parsing errors
+        }
+      }
+
+      if(apiKeyIsNull) {
+        const promiseId = nextPromiseId++;
+        const promise = new Promise((resolve) => {
+          pendingFetchResolvers[promiseId] = (resolvedResponse) => {
+            delete pendingFetchResolvers[promiseId];
+            resolve(resolvedResponse);
+          };
+        });
+
+        let serializedBodyForPostMessage;
+        if (typeof bodyForPostMessage === 'string' || bodyForPostMessage == null) {
+            serializedBodyForPostMessage = bodyForPostMessage;
+        } else if (bodyForPostMessage instanceof ReadableStream) {
+            serializedBodyForPostMessage = null;
+        } else {
+            try {
+                serializedBodyForPostMessage = JSON.stringify(bodyForPostMessage);
+            } catch (e) {
+                serializedBodyForPostMessage = null;
+            }
+        }
+
+        const messageOptions = {
+            method: effectiveOptions.method,
+            headers: Object.fromEntries(new Headers(effectiveOptions.headers).entries()),
+            body: serializedBodyForPostMessage
+        };
+
+        window.parent.postMessage({
+          type: 'requestFetch',
+          url: actualUrl,
+          modelName: modelName,
+          options: messageOptions,
+          promiseId: promiseId,
+        }, '*');
+
+        return promise;
+      }
+      return originalFetch.apply(window, fetchCallArgs);
+    }
+    return originalFetch.apply(window, fetchCallArgs);
+  };
+
+  window.addEventListener('message', function(event) {
+    if (event.data && event.data.type === 'resolveFetch') {
+      const { promiseId, response } = event.data;
+      if (pendingFetchResolvers[promiseId]) {
+        try {
+          const reconstructedResponse = new Response(response.body, {
+            status: response.status,
+            statusText: response.statusText,
+            headers: new Headers(response.headers),
+          });
+          pendingFetchResolvers[promiseId](reconstructedResponse);
+        } catch (error) {
+          pendingFetchResolvers[promiseId](new Response(null, { status: 500, statusText: "Interceptor Response Reconstruction Error" }));
+        }
+      }
+    }
+  });
+
+}))({"textModelName":"gemini-3-flash-preview","imageModelName":"imagen-4.0-generate-001","imageEditModelName":"gemini-3.1-flash-image","imageTransformModelName":"gemini-3-pro-image","videoModelName":"veo-2.0-generate-001","ttsModelName":"gemini-2.5-flash-preview-tts","deprecatedTextModelNames":["gemini-2.0-flash","gemini-2.5-flash","gemini-2.5-flash-preview-04-17","gemini-2.5-flash-preview-05-20","gemini-2.5-flash-preview-09-2025"],"deprecatedImageModelNames":["imagen-3.0-generate-001","imagen-3.0-generate-002"],"deprecatedGenerateImageModelNames":["gemini-2.5-flash-image-preview","gemini-2.5-flash-image","gemini-3.1-flash-image-preview"],"deprecatedImageTransformModelNames":["gemini-3-pro-image-preview-11-2025"]})</script><script data-bard-client-injected="true">(function(){'use strict';function a(){window.parent.postMessage({type:"interaction"},"*")}window.addEventListener("click",a,{capture:!0,passive:!0});window.addEventListener("touchstart",a,{capture:!0,passive:!0});window.addEventListener("keydown",a,{capture:!0,passive:!0});}).call(this);
+</script><script data-bard-client-injected="true">(function() {
+  const originalConsoleLog = console.log;
+  const originalConsoleError = console.error;
+
+    /**
+   * Normalizes an error event or a promise rejection reason into a structured error object.
+   * @param {*} errorEventOrReason The error object or reason.
+   * @return {object} Structured error data { message, name, stack }.
+   */
+  function getErrorObject(errorEventOrReason) {
+    if (errorEventOrReason instanceof Error) {
+      return {
+        message: errorEventOrReason.message,
+        name: errorEventOrReason.name,
+        stack: errorEventOrReason.stack,
+      };
+    }
+    // Fallback for non-Error objects.
+    try {
+      return {
+        message: JSON.stringify(errorEventOrReason),
+        name: 'UnknownErrorType',
+        stack: null,
+      };
+    } catch (e) {
+      return {
+        message: String(errorEventOrReason),
+        name: 'UnknownErrorTypeNonStringifiable',
+        stack: null,
+      };
+    }
+  }
+
+  /**
+   * Converts an array of arguments (from log/error) into a single string.
+   * Handles Error objects specially to include their message and stack.
+   * @param {Array<*>} args - Arguments passed to console methods.
+   * @return {string} A string representation of the arguments.
+   */
+  function stringifyArgs(args) {
+    return args
+      .map((arg) => {
+        if (arg instanceof Error) {
+          const {message, stack} = arg;
+          return `Error: ${message}${stack ? ('\nStack: ' + stack) : ''}`;
+        }
+        if (typeof arg === 'object' && arg !== null) {
+          try {
+            return JSON.stringify(arg);
+          } catch (error) {
+            return '[Circular Object]';
+          }
+        } else {
+          return String(arg);
+        }
+      })
+      .join(' ');
+  }
+
+  console.log = function(...args) {
+    const logString = stringifyArgs(args);
+    window.parent.postMessage({ type: 'log', message: logString }, '*');
+    originalConsoleLog.apply(console, args);
+  };
+
+  console.error = function(...args) {
+    let errorData;
+    if (args.length > 0 && args[0] instanceof Error) {
+      const err = args[0];
+      // If the first arg is an Error, capture its details.
+      errorData = {
+        type: 'error',
+        source: 'CONSOLE_ERROR',
+        ...getErrorObject(err),
+        rawArgsString: stringifyArgs(args.slice(1)),
+        timestamp: new Date().toISOString(),
+      };
+    } else {
+      // If not an Error object, treat all args as a general error message.
+      errorData = {
+        type: 'error',
+        source: 'CONSOLE_ERROR',
+        message: stringifyArgs(args),
+        name: 'ConsoleLoggedError',
+        stack: null,
+        timestamp: new Date().toISOString(),
+      };
+    }
+    window.parent.postMessage(errorData, '*');
+    originalConsoleError.apply(console, args);
+  };
+
+  // Listen for global unhandled synchronous errors.
+  window.addEventListener('error', function(event) {
+    const errorDetails = event.error ? getErrorObject(event.error) : {
+      message: event.message,
+      name: 'GlobalError',
+      stack: null,
+      filename: event.filename,
+      lineno: event.lineno,
+      colno: event.colno,
+    };
+
+    window.parent.postMessage({
+      type: 'error',
+      source: 'global',
+      ...errorDetails,
+      message: errorDetails.message || event.message,
+      timestamp: new Date().toISOString(),
+    }, '*');
+  });
+
+  // Listen for unhandled promise rejections (asynchronous errors).
+  window.addEventListener('unhandledrejection', function(event) {
+    const errorDetails = getErrorObject(event.reason);
+
+    window.parent.postMessage({
+      type: 'error',
+      source: 'unhandledrejection',
+      ...errorDetails,
+      message: errorDetails.message || 'Unhandled Promise Rejection',
+      timestamp: new Date().toISOString(),
+    }, '*');
+  });
+
+})();</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#020617">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>PureSudoku — Ad-Free Android Edition</title>
+
+  <!-- Tailwind CSS CDN (with offline fallback styles below) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+            mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace']
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    /* Critical layout, touch & crisp Sudoku grid styles */
+    * {
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      -webkit-user-select: none;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
+      height: 100dvh;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+      touch-action: manipulation;
+    }
+
+    /* Sudoku 9x9 Grid Structure */
+    .sudoku-board {
+      display: grid;
+      grid-template-columns: repeat(9, minmax(0, 1fr));
+      grid-template-rows: repeat(9, minmax(0, 1fr));
+      aspect-ratio: 1 / 1;
+      width: 100%;
+      max-width: 410px;
+      margin: 0 auto;
+      border-radius: 14px;
+      overflow: hidden;
+      border: 2.5px solid #64748b;
+      box-shadow: 0 12px 30px -8px rgba(0, 0, 0, 0.5);
+    }
+
+    html:not(.dark) .sudoku-board {
+      border-color: #1e293b;
+      box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.15);
+    }
+
+    .sudoku-cell {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      padding: 0;
+      outline: none;
+      cursor: pointer;
+      transition: background-color 60ms ease;
+      border-right: 1px solid rgba(148, 163, 184, 0.16);
+      border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+    }
+
+    html:not(.dark) .sudoku-cell {
+      border-right: 1px solid #e2e8f0;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    /* Thick 3x3 Box Borders */
+    .sudoku-cell.box-border-right {
+      border-right: 2.5px solid #64748b !important;
+    }
+    html:not(.dark) .sudoku-cell.box-border-right {
+      border-right: 2.5px solid #1e293b !important;
+    }
+
+    .sudoku-cell.box-border-bottom {
+      border-bottom: 2.5px solid #64748b !important;
+    }
+    html:not(.dark) .sudoku-cell.box-border-bottom {
+      border-bottom: 2.5px solid #1e293b !important;
+    }
+
+    .sudoku-cell.no-border-right {
+      border-right: none !important;
+    }
+    .sudoku-cell.no-border-bottom {
+      border-bottom: none !important;
+    }
+
+    /* Pencil Notes 3x3 Micro-Grid inside each cell */
+    .notes-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      width: 100%;
+      height: 100%;
+      padding: 2px;
+      pointer-events: none;
+    }
+
+    .note-digit {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: clamp(8px, 2.3vw, 11px);
+      line-height: 1;
+      font-weight: 600;
+    }
+
+    .cell-digit {
+      font-size: clamp(1.15rem, 5.2vw, 1.55rem);
+      line-height: 1;
+      pointer-events: none;
+    }
+
+    /* Custom Scrollbar for Modals */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(100, 116, 139, 0.4);
+      border-radius: 9999px;
+    }
+  </style>
+<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:Inter, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif;font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:JetBrains Mono, ui-monospace, SFMono-Regular, Menlo, monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0, 0, 0, 0);white-space:nowrap;border-width:0}.fixed{position:fixed}.absolute{position:absolute}.relative{position:relative}.sticky{position:sticky}.inset-0{inset:0px}.left-0\.5{left:0.125rem}.right-2{right:0.5rem}.top-0{top:0px}.top-0\.5{top:0.125rem}.top-1\.5{top:0.375rem}.z-20{z-index:20}.z-50{z-index:50}.mx-auto{margin-left:auto;margin-right:auto}.my-5{margin-top:1.25rem;margin-bottom:1.25rem}.my-auto{margin-top:auto;margin-bottom:auto}.mb-0\.5{margin-bottom:0.125rem}.mb-2{margin-bottom:0.5rem}.mb-4{margin-bottom:1rem}.mt-0\.5{margin-top:0.125rem}.mt-1{margin-top:0.25rem}.block{display:block}.flex{display:flex}.inline-flex{display:inline-flex}.grid{display:grid}.hidden{display:none}.h-14{height:3.5rem}.h-16{height:4rem}.h-3{height:0.75rem}.h-3\.5{height:0.875rem}.h-4{height:1rem}.h-5{height:1.25rem}.h-7{height:1.75rem}.h-8{height:2rem}.h-9{height:2.25rem}.max-h-\[90dvh\]{max-height:90dvh}.min-h-\[100dvh\]{min-height:100dvh}.w-14{width:3.5rem}.w-16{width:4rem}.w-3{width:0.75rem}.w-3\.5{width:0.875rem}.w-4{width:1rem}.w-5{width:1.25rem}.w-7{width:1.75rem}.w-8{width:2rem}.w-9{width:2.25rem}.w-full{width:100%}.max-w-\[410px\]{max-width:410px}.max-w-lg{max-width:32rem}.max-w-md{max-width:28rem}.max-w-sm{max-width:24rem}.flex-1{flex:1 1 0%}.shrink-0{flex-shrink:0}.translate-x-4{--tw-translate-x:1rem;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}@keyframes spin{to{transform:rotate(360deg)}}.animate-spin{animation:spin 1s linear infinite}.cursor-pointer{cursor:pointer}.list-inside{list-style-position:inside}.list-decimal{list-style-type:decimal}.grid-cols-3{grid-template-columns:repeat(3, minmax(0, 1fr))}.grid-cols-4{grid-template-columns:repeat(4, minmax(0, 1fr))}.grid-cols-9{grid-template-columns:repeat(9, minmax(0, 1fr))}.flex-col{flex-direction:column}.items-start{align-items:flex-start}.items-center{align-items:center}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-1{gap:0.25rem}.gap-1\.5{gap:0.375rem}.gap-2{gap:0.5rem}.gap-2\.5{gap:0.625rem}.gap-3{gap:0.75rem}.gap-4{gap:1rem}.space-y-1 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.25rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.25rem * var(--tw-space-y-reverse))}.space-y-1\.5 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.375rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.375rem * var(--tw-space-y-reverse))}.space-y-2 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.5rem * var(--tw-space-y-reverse))}.space-y-2\.5 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.625rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.625rem * var(--tw-space-y-reverse))}.space-y-5 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1.25rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1.25rem * var(--tw-space-y-reverse))}.overflow-hidden{overflow:hidden}.overflow-x-auto{overflow-x:auto}.overflow-y-auto{overflow-y:auto}.rounded{border-radius:0.25rem}.rounded-2xl{border-radius:1rem}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:0.5rem}.rounded-xl{border-radius:0.75rem}.border{border-width:1px}.border-2{border-width:2px}.border-4{border-width:4px}.border-b{border-bottom-width:1px}.border-t{border-top-width:1px}.border-amber-500\/40{border-color:rgb(245 158 11 / 0.4)}.border-emerald-500\/30{border-color:rgb(16 185 129 / 0.3)}.border-emerald-500\/40{border-color:rgb(16 185 129 / 0.4)}.border-indigo-500{--tw-border-opacity:1;border-color:rgb(99 102 241 / var(--tw-border-opacity, 1))}.border-indigo-500\/30{border-color:rgb(99 102 241 / 0.3)}.border-slate-700{--tw-border-opacity:1;border-color:rgb(51 65 85 / var(--tw-border-opacity, 1))}.border-slate-700\/60{border-color:rgb(51 65 85 / 0.6)}.border-slate-700\/70{border-color:rgb(51 65 85 / 0.7)}.border-slate-800{--tw-border-opacity:1;border-color:rgb(30 41 59 / var(--tw-border-opacity, 1))}.border-slate-800\/80{border-color:rgb(30 41 59 / 0.8)}.border-slate-800\/90{border-color:rgb(30 41 59 / 0.9)}.border-t-transparent{border-top-color:transparent}.bg-amber-500{--tw-bg-opacity:1;background-color:rgb(245 158 11 / var(--tw-bg-opacity, 1))}.bg-amber-500\/10{background-color:rgb(245 158 11 / 0.1)}.bg-amber-500\/20{background-color:rgb(245 158 11 / 0.2)}.bg-emerald-500\/10{background-color:rgb(16 185 129 / 0.1)}.bg-emerald-500\/15{background-color:rgb(16 185 129 / 0.15)}.bg-emerald-500\/20{background-color:rgb(16 185 129 / 0.2)}.bg-indigo-500\/10{background-color:rgb(99 102 241 / 0.1)}.bg-indigo-500\/15{background-color:rgb(99 102 241 / 0.15)}.bg-indigo-500\/20{background-color:rgb(99 102 241 / 0.2)}.bg-indigo-600{--tw-bg-opacity:1;background-color:rgb(79 70 229 / var(--tw-bg-opacity, 1))}.bg-indigo-600\/20{background-color:rgb(79 70 229 / 0.2)}.bg-slate-800{--tw-bg-opacity:1;background-color:rgb(30 41 59 / var(--tw-bg-opacity, 1))}.bg-slate-800\/80{background-color:rgb(30 41 59 / 0.8)}.bg-slate-800\/90{background-color:rgb(30 41 59 / 0.9)}.bg-slate-900{--tw-bg-opacity:1;background-color:rgb(15 23 42 / var(--tw-bg-opacity, 1))}.bg-slate-900\/70{background-color:rgb(15 23 42 / 0.7)}.bg-slate-900\/95{background-color:rgb(15 23 42 / 0.95)}.bg-slate-950{--tw-bg-opacity:1;background-color:rgb(2 6 23 / var(--tw-bg-opacity, 1))}.bg-slate-950\/50{background-color:rgb(2 6 23 / 0.5)}.bg-slate-950\/60{background-color:rgb(2 6 23 / 0.6)}.bg-slate-950\/80{background-color:rgb(2 6 23 / 0.8)}.bg-slate-950\/85{background-color:rgb(2 6 23 / 0.85)}.bg-slate-950\/90{background-color:rgb(2 6 23 / 0.9)}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.bg-indigo-600\/45{background-color:rgb(79 70 229 / 0.45)}.bg-slate-800\/75{background-color:rgb(30 41 59 / 0.75)}.p-0\.5{padding:0.125rem}.p-1{padding:0.25rem}.p-1\.5{padding:0.375rem}.p-2{padding:0.5rem}.p-3{padding:0.75rem}.p-3\.5{padding:0.875rem}.p-4{padding:1rem}.p-5{padding:1.25rem}.p-6{padding:1.5rem}.px-1\.5{padding-left:0.375rem;padding-right:0.375rem}.px-2{padding-left:0.5rem;padding-right:0.5rem}.px-2\.5{padding-left:0.625rem;padding-right:0.625rem}.px-3{padding-left:0.75rem;padding-right:0.75rem}.px-3\.5{padding-left:0.875rem;padding-right:0.875rem}.px-4{padding-left:1rem;padding-right:1rem}.px-5{padding-left:1.25rem;padding-right:1.25rem}.py-0\.5{padding-top:0.125rem;padding-bottom:0.125rem}.py-1{padding-top:0.25rem;padding-bottom:0.25rem}.py-1\.5{padding-top:0.375rem;padding-bottom:0.375rem}.py-2{padding-top:0.5rem;padding-bottom:0.5rem}.py-2\.5{padding-top:0.625rem;padding-bottom:0.625rem}.py-3{padding-top:0.75rem;padding-bottom:0.75rem}.py-3\.5{padding-top:0.875rem;padding-bottom:0.875rem}.pb-1\.5{padding-bottom:0.375rem}.pb-2{padding-bottom:0.5rem}.pr-1{padding-right:0.25rem}.pt-2{padding-top:0.5rem}.pt-2\.5{padding-top:0.625rem}.text-left{text-align:left}.text-center{text-align:center}.text-right{text-align:right}.font-mono{font-family:JetBrains Mono, ui-monospace, SFMono-Regular, Menlo, monospace}.text-2xl{font-size:1.5rem;line-height:2rem}.text-\[10px\]{font-size:10px}.text-\[11px\]{font-size:11px}.text-\[9px\]{font-size:9px}.text-base{font-size:1rem;line-height:1.5rem}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-xs{font-size:0.75rem;line-height:1rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.font-bold{font-weight:700}.font-extrabold{font-weight:800}.font-medium{font-weight:500}.font-semibold{font-weight:600}.uppercase{text-transform:uppercase}.leading-none{line-height:1}.leading-relaxed{line-height:1.625}.leading-snug{line-height:1.375}.leading-tight{line-height:1.25}.tracking-tight{letter-spacing:-0.025em}.tracking-wider{letter-spacing:0.05em}.text-amber-200{--tw-text-opacity:1;color:rgb(253 230 138 / var(--tw-text-opacity, 1))}.text-amber-300{--tw-text-opacity:1;color:rgb(252 211 77 / var(--tw-text-opacity, 1))}.text-amber-400{--tw-text-opacity:1;color:rgb(251 191 36 / var(--tw-text-opacity, 1))}.text-emerald-300{--tw-text-opacity:1;color:rgb(110 231 183 / var(--tw-text-opacity, 1))}.text-emerald-400{--tw-text-opacity:1;color:rgb(52 211 153 / var(--tw-text-opacity, 1))}.text-indigo-300{--tw-text-opacity:1;color:rgb(165 180 252 / var(--tw-text-opacity, 1))}.text-indigo-400{--tw-text-opacity:1;color:rgb(129 140 248 / var(--tw-text-opacity, 1))}.text-rose-400{--tw-text-opacity:1;color:rgb(251 113 133 / var(--tw-text-opacity, 1))}.text-slate-100{--tw-text-opacity:1;color:rgb(241 245 249 / var(--tw-text-opacity, 1))}.text-slate-200{--tw-text-opacity:1;color:rgb(226 232 240 / var(--tw-text-opacity, 1))}.text-slate-300{--tw-text-opacity:1;color:rgb(203 213 225 / var(--tw-text-opacity, 1))}.text-slate-400{--tw-text-opacity:1;color:rgb(148 163 184 / var(--tw-text-opacity, 1))}.text-slate-700{--tw-text-opacity:1;color:rgb(51 65 85 / var(--tw-text-opacity, 1))}.text-slate-950{--tw-text-opacity:1;color:rgb(2 6 23 / var(--tw-text-opacity, 1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.antialiased{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}.shadow-2xl{--tw-shadow:0 25px 50px -12px rgb(0 0 0 / 0.25);--tw-shadow-colored:0 25px 50px -12px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-lg{--tw-shadow:0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-md{--tw-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-sm{--tw-shadow:0 1px 2px 0 rgb(0 0 0 / 0.05);--tw-shadow-colored:0 1px 2px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-indigo-500\/25{--tw-shadow-color:rgb(99 102 241 / 0.25);--tw-shadow:var(--tw-shadow-colored)}.shadow-indigo-600\/25{--tw-shadow-color:rgb(79 70 229 / 0.25);--tw-shadow:var(--tw-shadow-colored)}.shadow-indigo-600\/30{--tw-shadow-color:rgb(79 70 229 / 0.3);--tw-shadow:var(--tw-shadow-colored)}.ring-2{--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000)}.ring-inset{--tw-ring-inset:inset}.ring-indigo-400{--tw-ring-opacity:1;--tw-ring-color:rgb(129 140 248 / var(--tw-ring-opacity, 1))}.backdrop-blur-md{--tw-backdrop-blur:blur(12px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.backdrop-blur-sm{--tw-backdrop-blur:blur(4px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-colors{transition-property:color, background-color, border-color, fill, stroke, -webkit-text-decoration-color;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, -webkit-text-decoration-color;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-transform{transition-property:transform;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.duration-200{transition-duration:200ms}.hover\:border-indigo-500\/60:hover{border-color:rgb(99 102 241 / 0.6)}.hover\:bg-amber-400:hover{--tw-bg-opacity:1;background-color:rgb(251 191 36 / var(--tw-bg-opacity, 1))}.hover\:bg-amber-500\/20:hover{background-color:rgb(245 158 11 / 0.2)}.hover\:bg-emerald-500\/20:hover{background-color:rgb(16 185 129 / 0.2)}.hover\:bg-indigo-500:hover{--tw-bg-opacity:1;background-color:rgb(99 102 241 / var(--tw-bg-opacity, 1))}.hover\:bg-indigo-500\/10:hover{background-color:rgb(99 102 241 / 0.1)}.hover\:bg-indigo-500\/25:hover{background-color:rgb(99 102 241 / 0.25)}.hover\:bg-slate-700:hover{--tw-bg-opacity:1;background-color:rgb(51 65 85 / var(--tw-bg-opacity, 1))}.hover\:bg-slate-800:hover{--tw-bg-opacity:1;background-color:rgb(30 41 59 / var(--tw-bg-opacity, 1))}.hover\:text-slate-200:hover{--tw-text-opacity:1;color:rgb(226 232 240 / var(--tw-text-opacity, 1))}.active\:scale-95:active{--tw-scale-x:.95;--tw-scale-y:.95;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.active\:scale-90:active{--tw-scale-x:.9;--tw-scale-y:.9;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.disabled\:opacity-40:disabled{opacity:0.4}@media (min-width: 640px){.sm\:p-4{padding:1rem}}</style></head>
+<body class="antialiased flex flex-col justify-between min-h-[100dvh] transition-colors duration-200 bg-slate-950 text-slate-100" id="app-body">
+
+  <!-- ==========================================
+       TOP ANDROID-STYLE APP BAR
+  =========================================== -->
+  <header id="app-header" class="w-full max-w-md mx-auto px-3.5 pt-2.5 pb-2 flex items-center justify-between border-b sticky top-0 z-20 backdrop-blur-md border-slate-800/80 bg-slate-950/90">
+    <div class="flex items-center gap-2.5">
+      <div class="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center shadow-md shadow-indigo-500/25 shrink-0">
+        <!-- Grid SVG Icon -->
+        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+          <rect width="18" height="18" x="3" y="3" rx="2"></rect>
+          <path d="M3 9h18M3 15h18M9 3v18M15 3v18"></path>
+        </svg>
+      </div>
+      <div>
+        <div class="flex items-center gap-1.5">
+          <h1 class="font-bold text-base tracking-tight leading-none">PureSudoku</h1>
+          <span class="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+            Standalone
+          </span>
+        </div>
+        <p id="saved-status" class="text-[11px] text-slate-400 mt-0.5">Auto-saved • Offline Ready</p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-1.5">
+      <!-- New Game Button -->
+      <button onclick="openNewGameModal()" class="px-2.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1 bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700/70 transition-all active:scale-95" title="Start New Game">
+        <svg class="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" stroke-width="2.3" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10"></circle><path d="M8 12h8M12 8v8"></path>
+        </svg>
+        <span>New</span>
+      </button>
+
+      <!-- Export / Install APK & GitHub Pages Guide Button -->
+      <button onclick="openInstallModal()" class="px-2.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1 bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-300 border border-indigo-500/30 transition-all active:scale-95" title="Download index.html or Install APK">
+        <svg class="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+          <rect width="14" height="20" x="5" y="2" rx="2" ry="2"></rect><path d="M12 18h.01"></path>
+        </svg>
+        <span>APK / Export</span>
+      </button>
+
+      <!-- Dark / Light Theme Toggle -->
+      <button onclick="toggleTheme()" id="theme-btn" class="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-amber-400 border border-slate-700/60 transition-colors active:scale-95" title="Toggle Dark/Light Theme">
+        <svg id="theme-icon-sun" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path>
+        </svg>
+        <svg id="theme-icon-moon" class="w-4 h-4 hidden text-slate-700" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+          <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ==========================================
+       MAIN CONTENT AREA
+  =========================================== -->
+  <main class="flex-1 w-full max-w-md mx-auto px-3 py-1.5 flex flex-col justify-between gap-2">
+
+    <!-- TOP CONTROLS: DIFFICULTY BAR & TIMER -->
+    <div class="flex flex-col gap-1.5">
+      <div class="flex items-center justify-between gap-1">
+        <!-- Difficulty Selector Pills -->
+        <div id="diff-pills" class="inline-flex p-0.5 rounded-xl border bg-slate-900 border-slate-800">
+          <button onclick="confirmSwitchDifficulty('Easy')" data-diff="Easy" class="diff-btn px-2.5 py-1 rounded-lg text-xs font-semibold transition-all text-slate-400 hover:text-slate-200">Easy</button>
+          <button onclick="confirmSwitchDifficulty('Medium')" data-diff="Medium" class="diff-btn px-2.5 py-1 rounded-lg text-xs font-semibold transition-all bg-indigo-600 text-white shadow-sm">Medium</button>
+          <button onclick="confirmSwitchDifficulty('Hard')" data-diff="Hard" class="diff-btn px-2.5 py-1 rounded-lg text-xs font-semibold transition-all text-slate-400 hover:text-slate-200">Hard</button>
+          <button onclick="confirmSwitchDifficulty('Expert')" data-diff="Expert" class="diff-btn px-2.5 py-1 rounded-lg text-xs font-semibold transition-all text-slate-400 hover:text-slate-200">Expert</button>
+        </div>
+
+        <!-- Timer & Pause Button -->
+        <button onclick="togglePause()" id="timer-btn" class="flex items-center gap-1.5 px-2.5 py-1 rounded-xl border text-xs font-mono font-semibold transition-colors active:scale-95 border-slate-800 bg-slate-900 text-slate-200 hover:bg-slate-800">
+          <span id="pause-icon-wrapper" class="text-amber-400">
+            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16" rx="1"></rect><rect x="14" y="4" width="4" height="16" rx="1"></rect></svg>
+          </span>
+          <span id="timer-display">00:23</span>
+        </button>
+      </div>
+
+      <!-- CHECK ON ENTRY TOGGLE & AUTO-NOTES BAR -->
+      <div id="settings-strip" class="flex items-center justify-between px-3 py-1.5 rounded-xl border border-slate-800/90 bg-slate-900/70">
+        <!-- Toggle Switch -->
+        <label class="flex items-center gap-2.5 cursor-pointer">
+          <div class="relative">
+            <input type="checkbox" id="check-on-entry-toggle" class="sr-only" checked="" onchange="toggleCheckOnEntry(this.checked)">
+            <div id="toggle-track" class="w-9 h-5 rounded-full transition-colors bg-indigo-600"></div>
+            <div id="toggle-knob" class="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform shadow-sm translate-x-4"></div>
+          </div>
+          <div class="flex flex-col">
+            <span class="text-xs font-semibold leading-tight flex items-center gap-1">
+              Check Guesses on Entry
+            </span>
+            <span id="check-mode-subtext" class="text-[10px] text-slate-400 leading-tight">Immediate solution check ON</span>
+          </div>
+        </label>
+
+        <!-- Right side: Mistakes Counter + Verify / Auto-Notes -->
+        <div class="flex items-center gap-2">
+          <div id="mistakes-box" class="text-right pr-1">
+            <span class="text-[9px] uppercase tracking-wider text-slate-400 block leading-none">Mistakes</span>
+            <span id="mistakes-count" class="text-xs font-bold text-slate-200">0</span>
+          </div>
+
+          <!-- Verify Button (Shown when Check on Entry is OFF) -->
+          <button id="verify-board-btn" onclick="verifyCurrentBoard()" class="hidden px-2 py-1 rounded-lg border border-emerald-500/40 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20 text-[11px] font-semibold transition-colors active:scale-95">
+            Verify
+          </button>
+
+          <!-- Auto-Notes Button -->
+          <button onclick="fillAutoNotes()" class="px-2 py-1 rounded-lg border border-slate-700 bg-slate-800/90 text-slate-200 hover:bg-slate-700 text-[11px] font-medium flex items-center gap-1 transition-colors active:scale-95" title="Populate all valid candidate notes">
+            <svg class="w-3 h-3 text-indigo-400" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <path d="m15 4-1 1 4 4 1-1a2.83 2.83 0 1 0-4-4Z"></path><path d="m13 6-8.5 8.5a2.12 2.12 0 0 0 0 3l1 1a2.12 2.12 0 0 0 3 0L17 10"></path><path d="M19 15v4M17 17h4"></path>
+            </svg>
+            <span>Auto-Notes</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOGICAL HINT / STATUS BANNER (Hidden unless active) -->
+    <div id="hint-banner" class="hidden px-3 py-2 rounded-xl border border-amber-500/40 bg-amber-500/10 text-amber-200 items-center justify-between gap-2">
+      <div class="flex items-start gap-2 text-xs">
+        <svg class="w-4 h-4 text-amber-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+          <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"></path><path d="M9 18h6M10 22h4"></path>
+        </svg>
+        <div>
+          <span id="hint-title" class="font-bold text-amber-400 block">Logical Hint</span>
+          <span id="hint-message" class="leading-snug text-[11px]"></span>
+        </div>
+      </div>
+      <div class="flex items-center gap-1 shrink-0">
+        <button id="hint-apply-btn" onclick="applyActiveHint()" class="px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-sm transition-colors">
+          Apply
+        </button>
+        <button onclick="closeHintBanner()" class="p-1 rounded-lg hover:bg-amber-500/20 text-amber-400">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"></path></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         9x9 SUDOKU GRID CONTAINER
+    =========================================== -->
+    <div class="relative w-full max-w-[410px] mx-auto my-auto">
+      <!-- Generating Overlay -->
+      <div id="generating-overlay" class="absolute inset-0 z-20 rounded-xl bg-slate-950/85 backdrop-blur-sm flex-col items-center justify-center gap-3 hidden">
+        <div class="w-9 h-9 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+        <p id="generating-text" class="text-xs font-semibold text-indigo-300">Generating Unique Medium Puzzle...</p>
+      </div>
+
+      <!-- Paused Overlay -->
+      <div id="paused-overlay" class="hidden absolute inset-0 z-20 rounded-xl bg-slate-900/95 backdrop-blur-md flex-col items-center justify-center gap-4 border-2 border-slate-800">
+        <div class="w-14 h-14 rounded-full bg-indigo-600/20 flex items-center justify-center text-indigo-400">
+          <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16" rx="1"></rect><rect x="14" y="4" width="4" height="16" rx="1"></rect></svg>
+        </div>
+        <div class="text-center">
+          <h2 class="text-lg font-bold text-white">Game Paused</h2>
+          <p id="paused-subtext" class="text-xs text-slate-400 mt-0.5">Take your time!</p>
+        </div>
+        <button onclick="togglePause()" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs flex items-center gap-2 shadow-lg shadow-indigo-600/30">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+          Resume Puzzle
+        </button>
+      </div>
+
+      <!-- The 81 Cells -->
+      <div id="sudoku-grid" class="sudoku-board bg-slate-900"><button type="button" class="sudoku-cell bg-indigo-600/45 ring-2 ring-inset ring-indigo-400"></button><button type="button" class="sudoku-cell bg-slate-800/75"><span class="cell-digit text-slate-100 font-bold">3</span></button><button type="button" class="sudoku-cell box-border-right bg-slate-800/75"></button><button type="button" class="sudoku-cell bg-slate-800/75"></button><button type="button" class="sudoku-cell bg-slate-800/75"><span class="cell-digit text-slate-100 font-bold">2</span></button><button type="button" class="sudoku-cell box-border-right bg-slate-800/75"></button><button type="button" class="sudoku-cell bg-slate-800/75"><span class="cell-digit text-slate-100 font-bold">1</span></button><button type="button" class="sudoku-cell bg-slate-800/75"><span class="cell-digit text-slate-100 font-bold">6</span></button><button type="button" class="sudoku-cell no-border-right bg-slate-800/75"><span class="cell-digit text-slate-100 font-bold">5</span></button><button type="button" class="sudoku-cell bg-slate-800/75"></button><button type="button" class="sudoku-cell bg-slate-800/75"></button><button type="button" class="sudoku-cell box-border-right bg-slate-800/75"></button><button type="button" class="sudoku-cell bg-slate-900"></button><button type="button" class="sudoku-cell bg-slate-900"></button><button type="button" class="sudoku-cell box-border-right bg-slate-900"><span class="cell-digit text-slate-100 font-bold">5</span></button><button type="button" class="sudoku-cell bg-slate-900"><span class="cell-digit text-slate-100 font-bold">4</span></button><button type="button" class="sudoku-cell bg-slate-900"></button><button type="button" class="sudoku-cell no-border-right bg-slate-900"></button><button type="button" class="sudoku-cell box-border-bottom bg-slate-800/75"><span class="cell-digit text-slate-100 font-bold">9</span></button><button type="button" class="sudoku-cell box-border-bottom bg-slate-800/75"><span class="cell-digit text-slate-100 font-bold">6</span></button><button type="button" class="sudoku-cell box-border-right box-border-bottom bg-slate-800/75"><span class="cell-digit text-slate-100 font-bold">5</span></button><button type="button" class="sudoku-cell box-border-bottom bg-slate-900"><span class="cell-digit text-slate-100 font-bold">1</span></button><button type="button" class="sudoku-cell box-border-bottom bg-slate-900"><span class="cell-digit text-slate-100 font-bold">8</span></button><button type="button" class="sudoku-cell box-border-right box-border-bottom bg-slate-900"><span class="cell-digit text-slate-100 font-bold">4</span></button><button type="button" class="sudoku-cell box-border-bottom bg-slate-900"><span class="cell-digit text-slate-100 font-bold">7</span></button><button type="button" class="sudoku-cell box-border-bottom bg-slate-900"></button><button type="button" class="sudoku-cell box-border-bottom no-border-right bg-slate-900"></button><button type="button" class="sudoku-cell bg-slate-800/75"><span class="cell-digit text-slate-100 font-bold">1</span></button><button type="button" class="sudoku-cell bg-slate-900"><span class="cell-digit text-slate-100 font-bold">5</span></button><button type="button" class="sudoku-cell box-border-right bg-slate-900"><span class="cell-digit text-slate-100 font-bold">2</span></button><button type="button" class="sudoku-cell bg-slate-900"><span class="cell-digit text-slate-100 font-bold">7</span></button><button type="button" class="sudoku-cell bg-slate-900"></button><button type="button" class="sudoku-cell box-border-right bg-slate-900"><span class="cell-digit text-slate-100 font-bold">9</span></button><button type="button" class="sudoku-cell bg-slate-900"></button><button type="button" class="sudoku-cell bg-slate-900"></button><button type="button" class="sudoku-cell no-border-right bg-slate-900"></button><button type="button" class="sudoku-cell bg-slate-800/75"></button><button type="button" class="sudoku-cell bg-slate-900"></button><button type="button" class="sudoku-cell box-border-right bg-slate-900"><span class="cell-digit text-slate-100 font-bold">7</span></button><button type="button" class="sudoku-cell bg-slate-900"></button><button type="button" class="sudoku-cell bg-slate-900"></button><button type="button" class="sudoku-cell box-border-right bg-slate-900"></button><button type="button" class="sudoku-cell bg-slate-900"><span class="cell-digit text-slate-100 font-bold">5</span></button><button type="button" class="sudoku-cell bg-slate-900"><span class="cell-digit text-slate-100 font-bold">3</span></button><button type="button" class="sudoku-cell no-border-right bg-slate-900"><span class="cell-digit text-slate-100 font-bold">9</span></button><button type="button" class="sudoku-cell box-border-bottom bg-slate-800/75"></button><button type="button" class="sudoku-cell box-border-bottom bg-slate-900"></button><button type="button" class="sudoku-cell box-border-right box-border-bottom bg-slate-900"><span class="cell-digit text-slate-100 font-bold">4</span></button><button type="button" class="sudoku-cell box-border-bottom bg-slate-900"></button><button type="button" class="sudoku-cell box-border-bottom bg-slate-900"></button><button type="button" class="sudoku-cell box-border-right box-border-bottom bg-slate-900"></button><button type="button" class="sudoku-cell box-border-bottom bg-slate-900"></button><button type="button" class="sudoku-cell box-border-bottom bg-slate-900"></button><button type="button" class="sudoku-cell box-border-bottom no-border-right bg-slate-900"></button><button type="button" class="sudoku-cell bg-slate-800/75"></button><button type="button" class="sudoku-cell bg-slate-900"><span class="cell-digit text-slate-100 font-bold">1</span></button><button type="button" class="sudoku-cell box-border-right bg-slate-900"><span class="cell-digit text-slate-100 font-bold">3</span></button><button type="button" class="sudoku-cell bg-slate-900"><span class="cell-digit text-slate-100 font-bold">5</span></button><button type="button" class="sudoku-cell bg-slate-900"></button><button type="button" class="sudoku-cell box-border-right bg-slate-900"></button><button type="button" class="sudoku-cell bg-slate-900"><span class="cell-digit text-slate-100 font-bold">9</span></button><button type="button" class="sudoku-cell bg-slate-900"></button><button type="button" class="sudoku-cell no-border-right bg-slate-900"></button><button type="button" class="sudoku-cell bg-slate-800/75"><span class="cell-digit text-slate-100 font-bold">2</span></button><button type="button" class="sudoku-cell bg-slate-900"></button><button type="button" class="sudoku-cell box-border-right bg-slate-900"></button><button type="button" class="sudoku-cell bg-slate-900"><span class="cell-digit text-slate-100 font-bold">8</span></button><button type="button" class="sudoku-cell bg-slate-900"><span class="cell-digit text-slate-100 font-bold">4</span></button><button type="button" class="sudoku-cell box-border-right bg-slate-900"></button><button type="button" class="sudoku-cell bg-slate-900"></button><button type="button" class="sudoku-cell bg-slate-900"><span class="cell-digit text-slate-100 font-bold">5</span></button><button type="button" class="sudoku-cell no-border-right bg-slate-900"><span class="cell-digit text-slate-100 font-bold">6</span></button><button type="button" class="sudoku-cell no-border-bottom bg-slate-800/75"></button><button type="button" class="sudoku-cell no-border-bottom bg-slate-900"><span class="cell-digit text-slate-100 font-bold">4</span></button><button type="button" class="sudoku-cell box-border-right no-border-bottom bg-slate-900"></button><button type="button" class="sudoku-cell no-border-bottom bg-slate-900"></button><button type="button" class="sudoku-cell no-border-bottom bg-slate-900"></button><button type="button" class="sudoku-cell box-border-right no-border-bottom bg-slate-900"></button><button type="button" class="sudoku-cell no-border-bottom bg-slate-900"></button><button type="button" class="sudoku-cell no-border-bottom bg-slate-900"><span class="cell-digit text-slate-100 font-bold">1</span></button><button type="button" class="sudoku-cell no-border-right no-border-bottom bg-slate-900"><span class="cell-digit text-slate-100 font-bold">7</span></button></div>
+    </div>
+
+    <!-- ==========================================
+         BOTTOM CONTROLS: TOOLS & 1-9 NUMBER PAD
+    =========================================== -->
+    <div class="flex flex-col gap-2 pb-1.5">
+      <!-- 4 Action Buttons: Undo, Erase, Notes, Hint -->
+      <div class="grid grid-cols-4 gap-2">
+        <!-- Undo -->
+        <button id="undo-btn" onclick="handleUndo()" class="tool-btn flex flex-col items-center justify-center py-2 px-2 rounded-xl border border-slate-800 bg-slate-900 hover:bg-slate-800 text-slate-200 transition-all active:scale-95 disabled:opacity-40" disabled="">
+          <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" stroke-width="2.1" viewBox="0 0 24 24">
+            <path d="M3 7v6h6"></path><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"></path>
+          </svg>
+          <span class="text-[11px] font-semibold">Undo</span>
+        </button>
+
+        <!-- Erase -->
+        <button onclick="handleErase()" class="tool-btn flex flex-col items-center justify-center py-2 px-2 rounded-xl border border-slate-800 bg-slate-900 hover:bg-slate-800 text-slate-200 transition-all active:scale-95">
+          <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" stroke-width="2.1" viewBox="0 0 24 24">
+            <path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"></path><path d="M22 21H7"></path><path d="m5 11 9 9"></path>
+          </svg>
+          <span class="text-[11px] font-semibold">Erase</span>
+        </button>
+
+        <!-- Notes Mode Toggle -->
+        <button id="notes-toggle-btn" onclick="toggleNoteMode()" class="tool-btn relative flex flex-col items-center justify-center py-2 px-2 rounded-xl border transition-all active:scale-95 border-slate-800 bg-slate-900 hover:bg-slate-800 text-slate-200">
+          <span id="notes-badge" class="absolute top-1.5 right-2 text-[9px] font-extrabold px-1.5 py-0.2 rounded-full uppercase bg-slate-800 text-slate-400">OFF</span>
+          <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" stroke-width="2.1" viewBox="0 0 24 24">
+            <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path><path d="m15 5 4 4"></path>
+          </svg>
+          <span class="text-[11px] font-semibold">Notes</span>
+        </button>
+
+        <!-- Smart Hint -->
+        <button id="hint-btn" onclick="handleHint()" class="tool-btn relative flex flex-col items-center justify-center py-2 px-2 rounded-xl border border-slate-800 bg-slate-900 hover:bg-slate-800 text-amber-400 transition-all active:scale-95">
+          <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" stroke-width="2.1" viewBox="0 0 24 24">
+            <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"></path><path d="M9 18h6M10 22h4"></path>
+          </svg>
+          <span id="hint-btn-label" class="text-[11px] font-semibold">Hint</span>
+        </button>
+      </div>
+
+      <!-- 1-9 Touch Number Pad -->
+      <div id="numpad-container" class="grid grid-cols-9 gap-1.5"><button type="button" class="h-14 rounded-xl font-bold flex flex-col items-center justify-center transition-all active:scale-90 border bg-slate-900 border-slate-800 text-slate-100 hover:bg-slate-800">
+          <span class="text-xl leading-none">1</span>
+          <span class="rem-count text-[9px] mt-1 font-medium">4</span>
+        </button><button type="button" class="h-14 rounded-xl font-bold flex flex-col items-center justify-center transition-all active:scale-90 border bg-slate-900 border-slate-800 text-slate-100 hover:bg-slate-800">
+          <span class="text-xl leading-none">2</span>
+          <span class="rem-count text-[9px] mt-1 font-medium">6</span>
+        </button><button type="button" class="h-14 rounded-xl font-bold flex flex-col items-center justify-center transition-all active:scale-90 border bg-slate-900 border-slate-800 text-slate-100 hover:bg-slate-800">
+          <span class="text-xl leading-none">3</span>
+          <span class="rem-count text-[9px] mt-1 font-medium">6</span>
+        </button><button type="button" class="h-14 rounded-xl font-bold flex flex-col items-center justify-center transition-all active:scale-90 border bg-slate-900 border-slate-800 text-slate-100 hover:bg-slate-800">
+          <span class="text-xl leading-none">4</span>
+          <span class="rem-count text-[9px] mt-1 font-medium">4</span>
+        </button><button type="button" class="h-14 rounded-xl font-bold flex flex-col items-center justify-center transition-all active:scale-90 border bg-slate-900 border-slate-800 text-slate-100 hover:bg-slate-800">
+          <span class="text-xl leading-none">5</span>
+          <span class="rem-count text-[9px] mt-1 font-medium">2</span>
+        </button><button type="button" class="h-14 rounded-xl font-bold flex flex-col items-center justify-center transition-all active:scale-90 border bg-slate-900 border-slate-800 text-slate-100 hover:bg-slate-800">
+          <span class="text-xl leading-none">6</span>
+          <span class="rem-count text-[9px] mt-1 font-medium">6</span>
+        </button><button type="button" class="h-14 rounded-xl font-bold flex flex-col items-center justify-center transition-all active:scale-90 border bg-slate-900 border-slate-800 text-slate-100 hover:bg-slate-800">
+          <span class="text-xl leading-none">7</span>
+          <span class="rem-count text-[9px] mt-1 font-medium">5</span>
+        </button><button type="button" class="h-14 rounded-xl font-bold flex flex-col items-center justify-center transition-all active:scale-90 border bg-slate-900 border-slate-800 text-slate-100 hover:bg-slate-800">
+          <span class="text-xl leading-none">8</span>
+          <span class="rem-count text-[9px] mt-1 font-medium">7</span>
+        </button><button type="button" class="h-14 rounded-xl font-bold flex flex-col items-center justify-center transition-all active:scale-90 border bg-slate-900 border-slate-800 text-slate-100 hover:bg-slate-800">
+          <span class="text-xl leading-none">9</span>
+          <span class="rem-count text-[9px] mt-1 font-medium">5</span>
+        </button></div>
+    </div>
+  </main>
+
+  <!-- ==========================================
+       MODAL 1: NEW GAME DIFFICULTY SELECTOR
+  =========================================== -->
+  <div id="new-game-modal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm items-center justify-center p-4">
+    <div class="modal-card w-full max-w-sm rounded-2xl p-5 border border-slate-800 bg-slate-900 text-slate-100 shadow-2xl">
+      <div class="flex items-center justify-between mb-2">
+        <h3 class="font-bold text-lg">Start New Puzzle</h3>
+        <button onclick="closeNewGameModal()" class="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"></path></svg>
+        </button>
+      </div>
+      <p class="text-xs text-slate-400 mb-4">
+        Every puzzle is generated on-device with a fast MRV solver to guarantee a strictly unique solution.
+      </p>
+      <div class="flex flex-col gap-2">
+        <button onclick="startNewGame('Easy')" class="p-3 rounded-xl border border-slate-800 bg-slate-950/60 hover:border-indigo-500/60 hover:bg-indigo-500/10 text-left flex items-center justify-between transition-all">
+          <div>
+            <div class="font-bold text-sm text-emerald-400">Easy</div>
+            <div class="text-xs text-slate-400">45 given clues • Relaxed warm-up</div>
+          </div>
+          <span class="text-xs font-semibold px-2 py-1 rounded-lg bg-slate-800 text-slate-300">Play →</span>
+        </button>
+        <button onclick="startNewGame('Medium')" class="p-3 rounded-xl border border-slate-800 bg-slate-950/60 hover:border-indigo-500/60 hover:bg-indigo-500/10 text-left flex items-center justify-between transition-all">
+          <div>
+            <div class="font-bold text-sm text-indigo-400">Medium</div>
+            <div class="text-xs text-slate-400">36 given clues • Balanced logical flow</div>
+          </div>
+          <span class="text-xs font-semibold px-2 py-1 rounded-lg bg-slate-800 text-slate-300">Play →</span>
+        </button>
+        <button onclick="startNewGame('Hard')" class="p-3 rounded-xl border border-slate-800 bg-slate-950/60 hover:border-indigo-500/60 hover:bg-indigo-500/10 text-left flex items-center justify-between transition-all">
+          <div>
+            <div class="font-bold text-sm text-amber-400">Hard</div>
+            <div class="text-xs text-slate-400">30 given clues • Pencil notes recommended</div>
+          </div>
+          <span class="text-xs font-semibold px-2 py-1 rounded-lg bg-slate-800 text-slate-300">Play →</span>
+        </button>
+        <button onclick="startNewGame('Expert')" class="p-3 rounded-xl border border-slate-800 bg-slate-950/60 hover:border-indigo-500/60 hover:bg-indigo-500/10 text-left flex items-center justify-between transition-all">
+          <div>
+            <div class="font-bold text-sm text-rose-400">Expert</div>
+            <div class="text-xs text-slate-400">25 given clues • Deep candidate elimination</div>
+          </div>
+          <span class="text-xs font-semibold px-2 py-1 rounded-lg bg-slate-800 text-slate-300">Play →</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       MODAL 2: VICTORY CELEBRATION
+  =========================================== -->
+  <div id="victory-modal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm items-center justify-center p-4">
+    <div class="modal-card w-full max-w-sm rounded-2xl p-6 border border-slate-800 bg-slate-900 text-slate-100 shadow-2xl text-center">
+      <div class="w-16 h-16 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 flex items-center justify-center mx-auto mb-4">
+        <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+          <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
+        </svg>
+      </div>
+      <h2 class="text-2xl font-extrabold">Puzzle Solved!</h2>
+      <p id="victory-subtitle" class="text-xs text-slate-400 mt-1">Flawless logical deduction!</p>
+
+      <div class="grid grid-cols-3 gap-2 my-5 p-3 rounded-xl border border-slate-800 bg-slate-950/60">
+        <div>
+          <span class="text-[10px] uppercase text-slate-400 block">Time</span>
+          <span id="victory-time" class="text-sm font-bold font-mono">00:00</span>
+        </div>
+        <div>
+          <span class="text-[10px] uppercase text-slate-400 block">Difficulty</span>
+          <span id="victory-diff" class="text-sm font-bold text-indigo-400">Medium</span>
+        </div>
+        <div>
+          <span class="text-[10px] uppercase text-slate-400 block">Hints Used</span>
+          <span id="victory-hints" class="text-sm font-bold">0</span>
+        </div>
+      </div>
+
+      <div class="flex flex-col gap-2">
+        <button onclick="playAgainSameDifficulty()" class="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm shadow-lg shadow-indigo-600/25 transition-colors">
+          Play Another Puzzle
+        </button>
+        <button onclick="closeVictoryAndPickDifficulty()" class="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs">
+          Change Difficulty
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       MODAL 3: STEP-BY-STEP GITHUB PAGES & APK GUIDE
+  =========================================== -->
+  <div id="install-modal" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-sm items-center justify-center p-3 sm:p-4 flex">
+    <div class="modal-card w-full max-w-lg max-h-[90dvh] flex flex-col rounded-2xl border border-slate-800 bg-slate-900 text-slate-100 shadow-2xl overflow-hidden">
+      <!-- Modal Header -->
+      <div class="px-5 py-3.5 border-b border-slate-800 flex items-center justify-between shrink-0">
+        <div class="flex items-center gap-2">
+          <div class="w-7 h-7 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"></path>
+            </svg>
+          </div>
+          <h3 class="font-bold text-base">Install on Android (Zero Build Errors!)</h3>
+        </div>
+        <button onclick="closeInstallModal()" class="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"></path></svg>
+        </button>
+      </div>
+
+      <!-- Modal Scrollable Content -->
+      <div class="p-5 overflow-y-auto space-y-5 text-xs leading-relaxed">
+        <!-- Why it failed before & One-click download -->
+        <div class="p-3.5 rounded-xl bg-indigo-500/10 border border-indigo-500/30 space-y-2.5">
+          <div class="font-bold text-indigo-300 text-sm">
+            Why you got a 404 &amp; React errors earlier (Now Fixed!)
+          </div>
+          <p class="text-slate-300">
+            Previously, the app was a <code class="text-amber-300">.jsx</code> React file, which browsers and GitHub Pages cannot open directly without a Node/Vite compiler. <strong>This new version is 100% pure HTML &amp; Vanilla JavaScript inside a single <code class="text-emerald-300">index.html</code> file.</strong>
+          </p>
+          <button onclick="downloadStandaloneHTML()" class="w-full py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/30 transition-all active:scale-95">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.3" viewBox="0 0 24 24">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"></path>
+            </svg>
+            <span>Download Standalone index.html File</span>
+          </button>
+        </div>
+
+        <!-- METHOD 1: GITHUB PAGES -->
+        <div class="space-y-2">
+          <div class="flex items-center gap-2">
+            <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold text-[10px] uppercase">Method 1 (Easiest)</span>
+            <h4 class="font-bold text-sm text-white">GitHub Pages + Android "Install App"</h4>
+          </div>
+          <ol class="list-decimal list-inside space-y-1.5 text-slate-300">
+            <li>Click the <strong>Download Standalone index.html File</strong> button above (or copy the code from the editor and save it on your computer as <code class="text-indigo-300 font-mono">index.html</code> — make sure it is lowercase!).</li>
+            <li>Go to GitHub, create a new public repository (e.g. <code class="text-indigo-300 font-mono">sudoku</code>), click <strong>Add file → Upload files</strong>, and drop <code class="text-indigo-300 font-mono">index.html</code> right in the main root folder. Commit the changes.</li>
+            <li>In your GitHub repo, click <strong>Settings → Pages</strong> (on the left sidebar). Under <strong>Branch</strong>, select <code class="text-indigo-300 font-mono">main</code> (and <code class="text-indigo-300 font-mono">/root</code>) and click <strong>Save</strong>.</li>
+            <li>Wait 60 seconds, then open <code class="text-emerald-300 font-mono">https://YOUR-USERNAME.github.io/sudoku/</code> in Chrome on your Android phone.</li>
+            <li>Tap Chrome's menu <strong>(⋮) → Add to Home screen → Install App</strong>. You now have a full-screen offline Android app!</li>
+          </ol>
+        </div>
+
+        <!-- METHOD 2: PWABUILDER 30-SECOND APK -->
+        <div class="space-y-1.5 pt-2 border-t border-slate-800">
+          <div class="flex items-center gap-2">
+            <span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold text-[10px] uppercase">Method 2 (No Coding)</span>
+            <h4 class="font-bold text-sm text-white">Get a Real <code class="text-amber-300">.apk</code> from Your GitHub Pages URL</h4>
+          </div>
+          <p class="text-slate-300">
+            Once your GitHub Pages link is live, if you still prefer a real sideloadable <code class="text-amber-300">.apk</code> file without installing Android Studio:
+          </p>
+          <ol class="list-decimal list-inside space-y-1 text-slate-300">
+            <li>Go to <strong>PWABuilder.com</strong> and paste your GitHub Pages URL.</li>
+            <li>Click <strong>Package for stores → Android → Download Package</strong>.</li>
+            <li>Unzip the download and copy the included <code class="text-emerald-300 font-mono">.apk</code> file to your phone to sideload!</li>
+          </ol>
+        </div>
+
+        <!-- METHOD 3: CAPACITOR LOCAL APK BUILD (NO REACT!) -->
+        <div class="space-y-2 pt-2 border-t border-slate-800">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 font-bold text-[10px] uppercase">Method 3 (Local CLI)</span>
+              <h4 class="font-bold text-sm text-white">Build <code class="text-indigo-300">app-debug.apk</code> Locally (No React)</h4>
+            </div>
+            <button onclick="copyCapacitorCommands()" id="copy-cmd-btn" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-indigo-300 text-[11px] font-semibold">
+              Copy Commands
+            </button>
+          </div>
+          <p class="text-slate-300">
+            Because this file needs zero bundling, you can skip React/Vite completely. Put your downloaded <code class="text-indigo-300">index.html</code> into a folder and run:
+          </p>
+          <pre id="cap-commands" class="p-3 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 font-mono text-[11px] overflow-x-auto leading-relaxed">mkdir puresudoku &amp;&amp; cd puresudoku
+mkdir www
+# Move your downloaded index.html into the www/ folder:
+# puresudoku/www/index.html
+
+npm init -y
+npm install @capacitor/core @capacitor/cli @capacitor/android
+npx cap init PureSudoku com.puresudoku.app --web-dir www
+npx cap add android
+npx cap copy
+
+# Build the sideloadable APK:
+cd android &amp;&amp; ./gradlew assembleDebug</pre>
+          <p class="text-slate-400 text-[11px]">
+            Your APK will be ready at: <code class="text-emerald-400 font-mono">android/app/build/outputs/apk/debug/app-debug.apk</code>
+          </p>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="px-5 py-3 border-t border-slate-800 bg-slate-950/50 shrink-0">
+        <button onclick="closeInstallModal()" class="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs transition-colors">
+          Close Guide &amp; Return to Game
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       COMPLETE VANILLA JS SUDOKU ENGINE & UI
+  =========================================== -->
+  <script>
+    /**************************************************************
+     * 1. FAST SUDOKU GENERATOR & UNIQUE-SOLUTION SOLVER (MRV)
+     **************************************************************/
+    const BLANK = 0;
+    const STORAGE_KEY = 'puresudoku_saved_state_v2';
+
+    const getRow = (i) => Math.floor(i / 9);
+    const getCol = (i) => i % 9;
+    const getBox = (i) => Math.floor(getRow(i) / 3) * 3 + Math.floor(getCol(i) / 3);
+
+    // Precompute peers for all 81 cells
+    const PEERS = Array.from({ length: 81 }, (_, i) => {
+      const r = getRow(i), c = getCol(i), b = getBox(i);
+      const set = new Set();
+      for (let j = 0; j < 81; j++) {
+        if (j !== i && (getRow(j) === r || getCol(j) === c || getBox(j) === b)) {
+          set.add(j);
+        }
+      }
+      return Array.from(set);
+    });
+
+    function isValidPlacement(board, idx, num) {
+      const peers = PEERS[idx];
+      for (let i = 0; i < peers.length; i++) {
+        if (board[peers[i]] === num) return false;
+      }
+      return true;
+    }
+
+    function shuffle(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    // Generate a complete valid 9x9 solved board
+    function generateFullSolution() {
+      const board = new Array(81).fill(BLANK);
+
+      function fill(idx) {
+        if (idx === 81) return true;
+        if (board[idx] !== BLANK) return fill(idx + 1);
+
+        const digits = shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+        for (let d of digits) {
+          if (isValidPlacement(board, idx, d)) {
+            board[idx] = d;
+            if (fill(idx + 1)) return true;
+            board[idx] = BLANK;
+          }
+        }
+        return false;
+      }
+
+      fill(0);
+      return board;
+    }
+
+    // Fast MRV solution counter (stops as soon as count >= limit, default 2)
+    function countSolutionsMRV(boardState, limit = 2) {
+      const board = [...boardState];
+      let solutions = 0;
+
+      function solve() {
+        if (solutions >= limit) return;
+
+        let bestIdx = -1;
+        let bestCandidates = null;
+
+        for (let i = 0; i < 81; i++) {
+          if (board[i] === BLANK) {
+            const cands = [];
+            for (let n = 1; n <= 9; n++) {
+              if (isValidPlacement(board, i, n)) cands.push(n);
+            }
+            if (cands.length === 0) return; // Dead branch
+            if (bestCandidates === null || cands.length < bestCandidates.length) {
+              bestCandidates = cands;
+              bestIdx = i;
+              if (cands.length === 1) break;
+            }
+          }
+        }
+
+        if (bestIdx === -1) {
+          solutions++;
+          return;
+        }
+
+        for (let i = 0; i < bestCandidates.length; i++) {
+          board[bestIdx] = bestCandidates[i];
+          solve();
+          board[bestIdx] = BLANK;
+          if (solutions >= limit) return;
+        }
+      }
+
+      solve();
+      return solutions;
+    }
+
+    // Create a puzzle with a guaranteed single unique solution
+    function createUniquePuzzle(difficulty) {
+      const solution = generateFullSolution();
+      const puzzle = [...solution];
+
+      const targetClues = {
+        Easy: 45,
+        Medium: 36,
+        Hard: 30,
+        Expert: 25
+      }[difficulty] || 36;
+
+      const order = shuffle(Array.from({ length: 81 }, (_, i) => i));
+      let cluesLeft = 81;
+
+      for (let idx of order) {
+        if (cluesLeft <= targetClues) break;
+        const saved = puzzle[idx];
+        puzzle[idx] = BLANK;
+
+        if (countSolutionsMRV(puzzle, 2) !== 1) {
+          puzzle[idx] = saved; // Keep clue to preserve unique solution
+        } else {
+          cluesLeft--;
+        }
+      }
+
+      return { puzzle, solution };
+    }
+
+    function getValidCandidates(board, idx) {
+      if (board[idx] !== BLANK) return [];
+      const res = [];
+      for (let n = 1; n <= 9; n++) {
+        if (isValidPlacement(board, idx, n)) res.push(n);
+      }
+      return res;
+    }
+
+    /**************************************************************
+     * 2. SMART LOGICAL HINT ENGINE
+     **************************************************************/
+    function findLogicalHint(userBoard, solution) {
+      // Step 1: Check if any filled cell contradicts the true solution
+      for (let i = 0; i < 81; i++) {
+        if (userBoard[i] !== BLANK && userBoard[i] !== solution[i]) {
+          return {
+            idx: i,
+            num: solution[i],
+            type: 'Mistake Found',
+            message: `Row ${getRow(i) + 1}, Col ${getCol(i) + 1} currently has ${userBoard[i]}, which blocks the solution. Tap Apply to fix it to ${solution[i]}.`
+          };
+        }
+      }
+
+      // Step 2: Look for a Naked Single (cell with only 1 valid candidate)
+      for (let i = 0; i < 81; i++) {
+        if (userBoard[i] === BLANK) {
+          const cands = getValidCandidates(userBoard, i);
+          if (cands.length === 1 && cands[0] === solution[i]) {
+            return {
+              idx: i,
+              num: cands[0],
+              type: 'Naked Single',
+              message: `Row ${getRow(i) + 1}, Col ${getCol(i) + 1} can only be ${cands[0]} because all other digits (1–9) already exist in its row, column, or 3×3 box.`
+            };
+          }
+        }
+      }
+
+      // Step 3: Look for a Hidden Single in any Row, Column, or 3x3 Box
+      const units = [];
+      for (let r = 0; r < 9; r++) {
+        units.push({ name: `Row ${r + 1}`, cells: Array.from({ length: 9 }, (_, c) => r * 9 + c) });
+      }
+      for (let c = 0; c < 9; c++) {
+        units.push({ name: `Column ${c + 1}`, cells: Array.from({ length: 9 }, (_, r) => r * 9 + c) });
+      }
+      for (let b = 0; b < 9; b++) {
+        const sr = Math.floor(b / 3) * 3, sc = (b % 3) * 3;
+        const cells = [];
+        for (let r = 0; r < 3; r++) {
+          for (let c = 0; c < 3; c++) cells.push((sr + r) * 9 + (sc + c));
+        }
+        units.push({ name: `Box ${b + 1}`, cells });
+      }
+
+      for (let unit of units) {
+        for (let num = 1; num <= 9; num++) {
+          if (unit.cells.some(idx => userBoard[idx] === num)) continue;
+          const spots = unit.cells.filter(idx => userBoard[idx] === BLANK && isValidPlacement(userBoard, idx, num));
+          if (spots.length === 1 && solution[spots[0]] === num) {
+            const target = spots[0];
+            return {
+              idx: target,
+              num,
+              type: 'Hidden Single',
+              message: `In ${unit.name}, the digit ${num} can only legally fit in Row ${getRow(target) + 1}, Col ${getCol(target) + 1}.`
+            };
+          }
+        }
+      }
+
+      // Step 4: Fallback to cell with fewest candidates
+      let bestIdx = -1, minLen = 10;
+      for (let i = 0; i < 81; i++) {
+        if (userBoard[i] === BLANK) {
+          const cands = getValidCandidates(userBoard, i);
+          if (cands.length < minLen) {
+            minLen = cands.length;
+            bestIdx = i;
+          }
+        }
+      }
+
+      if (bestIdx !== -1) {
+        return {
+          idx: bestIdx,
+          num: solution[bestIdx],
+          type: 'Logical Step',
+          message: `Try placing ${solution[bestIdx]} at Row ${getRow(bestIdx) + 1}, Col ${getCol(bestIdx) + 1} to unlock the next chain of deductions.`
+        };
+      }
+
+      return null;
+    }
+
+    /**************************************************************
+     * 3. APPLICATION STATE & LOCALSTORAGE PERSISTENCE
+     **************************************************************/
+    let state = {
+      darkMode: true,
+      difficulty: 'Medium',
+      checkOnEntry: true,
+      initialBoard: new Array(81).fill(0),
+      userBoard: new Array(81).fill(0),
+      solution: new Array(81).fill(0),
+      notes: Array.from({ length: 81 }, () => []),
+      history: [],
+      selectedIdx: 0,
+      isNoteMode: false,
+      activeHint: null,
+      timer: 0,
+      isPaused: false,
+      isCompleted: false,
+      mistakes: 0,
+      hintsUsed: 0
+    };
+
+    function saveGameState() {
+      try {
+        const payload = {
+          darkMode: state.darkMode,
+          difficulty: state.difficulty,
+          checkOnEntry: state.checkOnEntry,
+          initialBoard: state.initialBoard,
+          userBoard: state.userBoard,
+          solution: state.solution,
+          notes: state.notes,
+          timer: state.timer,
+          mistakes: state.mistakes,
+          hintsUsed: state.hintsUsed,
+          isCompleted: state.isCompleted
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+      } catch (e) {
+        // Ignore storage quota errors in restricted webviews
+      }
+    }
+
+    function loadSavedGameState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return false;
+        const data = JSON.parse(raw);
+        if (!data || !Array.isArray(data.solution) || data.solution.length !== 81 || data.solution[0] === 0) {
+          return false;
+        }
+        state.darkMode = data.darkMode !== undefined ? data.darkMode : true;
+        state.difficulty = data.difficulty || 'Medium';
+        state.checkOnEntry = data.checkOnEntry !== undefined ? data.checkOnEntry : true;
+        state.initialBoard = data.initialBoard;
+        state.userBoard = data.userBoard;
+        state.solution = data.solution;
+        state.notes = data.notes || Array.from({ length: 81 }, () => []);
+        state.timer = data.timer || 0;
+        state.mistakes = data.mistakes || 0;
+        state.hintsUsed = data.hintsUsed || 0;
+        state.isCompleted = !!data.isCompleted;
+        state.history = [];
+        const firstEmpty = state.userBoard.findIndex(v => v === 0);
+        state.selectedIdx = firstEmpty !== -1 ? firstEmpty : 0;
+        return true;
+      } catch (e) {
+        return false;
+      }
+    }
+
+    /**************************************************************
+     * 4. DOM INITIALIZATION & RENDER FUNCTIONS
+     **************************************************************/
+    const cellElements = [];
+    const numpadButtons = [];
+
+    function initDOMGrid() {
+      const grid = document.getElementById('sudoku-grid');
+      grid.innerHTML = '';
+      cellElements.length = 0;
+
+      for (let i = 0; i < 81; i++) {
+        const r = getRow(i), c = getCol(i);
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'sudoku-cell';
+        if (c === 2 || c === 5) btn.classList.add('box-border-right');
+        if (r === 2 || r === 5) btn.classList.add('box-border-bottom');
+        if (c === 8) btn.classList.add('no-border-right');
+        if (r === 8) btn.classList.add('no-border-bottom');
+
+        btn.addEventListener('click', () => selectCell(i));
+        grid.appendChild(btn);
+        cellElements.push(btn);
+      }
+
+      const numpad = document.getElementById('numpad-container');
+      numpad.innerHTML = '';
+      numpadButtons.length = 0;
+
+      for (let n = 1; n <= 9; n++) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'h-14 rounded-xl font-bold flex flex-col items-center justify-center transition-all active:scale-90 border';
+        btn.innerHTML = `
+          <span class="text-xl leading-none">${n}</span>
+          <span class="rem-count text-[9px] mt-1 font-medium">9</span>
+        `;
+        btn.addEventListener('click', () => handleNumberInput(n));
+        numpad.appendChild(btn);
+        numpadButtons.push(btn);
+      }
+    }
+
+    function hasVisibleConflict(idx) {
+      const val = state.userBoard[idx];
+      if (val === BLANK) return false;
+      for (let peer of PEERS[idx]) {
+        if (state.userBoard[peer] === val) return true;
+      }
+      return false;
+    }
+
+    function formatTime(sec) {
+      const m = Math.floor(sec / 60).toString().padStart(2, '0');
+      const s = (sec % 60).toString().padStart(2, '0');
+      return `${m}:${s}`;
+    }
+
+    function renderAll() {
+      const dark = state.darkMode;
+      document.documentElement.classList.toggle('dark', dark);
+
+      const body = document.getElementById('app-body');
+      const header = document.getElementById('app-header');
+      const settingsStrip = document.getElementById('settings-strip');
+      const diffPills = document.getElementById('diff-pills');
+      const timerBtn = document.getElementById('timer-btn');
+      const grid = document.getElementById('sudoku-grid');
+
+      body.className = `antialiased flex flex-col justify-between min-h-[100dvh] transition-colors duration-200 ${
+        dark ? 'bg-slate-950 text-slate-100' : 'bg-slate-100 text-slate-900'
+      }`;
+      header.className = `w-full max-w-md mx-auto px-3.5 pt-2.5 pb-2 flex items-center justify-between border-b sticky top-0 z-20 backdrop-blur-md ${
+        dark ? 'border-slate-800/80 bg-slate-950/90' : 'border-slate-200 bg-white/90'
+      }`;
+      settingsStrip.className = `flex items-center justify-between px-3 py-1.5 rounded-xl border ${
+        dark ? 'border-slate-800/90 bg-slate-900/70' : 'border-slate-200 bg-white shadow-sm'
+      }`;
+      diffPills.className = `inline-flex p-0.5 rounded-xl border ${
+        dark ? 'bg-slate-900 border-slate-800' : 'bg-slate-200/80 border-slate-300'
+      }`;
+      timerBtn.className = `flex items-center gap-1.5 px-2.5 py-1 rounded-xl border text-xs font-mono font-semibold transition-colors active:scale-95 ${
+        dark ? 'border-slate-800 bg-slate-900 text-slate-200 hover:bg-slate-800' : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-100'
+      }`;
+      grid.className = `sudoku-board ${dark ? 'bg-slate-900' : 'bg-white'}`;
+
+      // Theme Icon
+      document.getElementById('theme-icon-sun').classList.toggle('hidden', !dark);
+      document.getElementById('theme-icon-moon').classList.toggle('hidden', dark);
+
+      // Difficulty Buttons
+      document.querySelectorAll('.diff-btn').forEach(btn => {
+        const isCurrent = btn.getAttribute('data-diff') === state.difficulty;
+        btn.className = `diff-btn px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
+          isCurrent
+            ? 'bg-indigo-600 text-white shadow-sm'
+            : dark ? 'text-slate-400 hover:text-slate-200' : 'text-slate-600 hover:text-slate-900'
+        }`;
+      });
+
+      // Check on entry UI
+      const toggleInput = document.getElementById('check-on-entry-toggle');
+      const toggleTrack = document.getElementById('toggle-track');
+      const toggleKnob = document.getElementById('toggle-knob');
+      const checkSubtext = document.getElementById('check-mode-subtext');
+      const mistakesBox = document.getElementById('mistakes-box');
+      const verifyBtn = document.getElementById('verify-board-btn');
+
+      toggleInput.checked = state.checkOnEntry;
+      toggleTrack.className = `w-9 h-5 rounded-full transition-colors ${
+        state.checkOnEntry ? 'bg-indigo-600' : (dark ? 'bg-slate-700' : 'bg-slate-300')
+      }`;
+      toggleKnob.className = `absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform shadow-sm ${
+        state.checkOnEntry ? 'translate-x-4' : 'translate-x-0'
+      }`;
+      checkSubtext.textContent = state.checkOnEntry
+        ? 'Immediate solution check ON'
+        : 'Unchecked mode (no spoilers)';
+
+      mistakesBox.classList.toggle('hidden', !state.checkOnEntry);
+      verifyBtn.classList.toggle('hidden', state.checkOnEntry);
+
+      const mistakesCountEl = document.getElementById('mistakes-count');
+      mistakesCountEl.textContent = state.mistakes;
+      mistakesCountEl.className = `text-xs font-bold ${state.mistakes > 0 ? 'text-rose-400' : (dark ? 'text-slate-200' : 'text-slate-700')}`;
+
+      // Timer & Pause Overlay
+      document.getElementById('timer-display').textContent = formatTime(state.timer);
+      const pausedOverlay = document.getElementById('paused-overlay');
+      if (state.isPaused) {
+        pausedOverlay.classList.remove('hidden');
+        pausedOverlay.classList.add('flex');
+        document.getElementById('paused-subtext').textContent = `${state.difficulty} Mode • ${formatTime(state.timer)}`;
+      } else {
+        pausedOverlay.classList.add('hidden');
+        pausedOverlay.classList.remove('flex');
+      }
+
+      // Hint Banner
+      const hintBanner = document.getElementById('hint-banner');
+      const hintBtnLabel = document.getElementById('hint-btn-label');
+      if (state.activeHint) {
+        hintBanner.classList.remove('hidden');
+        hintBanner.classList.add('flex');
+        document.getElementById('hint-title').textContent = state.activeHint.type;
+        document.getElementById('hint-message').textContent = state.activeHint.message;
+        document.getElementById('hint-apply-btn').textContent = `Fill ${state.activeHint.num}`;
+        hintBtnLabel.textContent = 'Apply Hint';
+      } else {
+        hintBanner.classList.add('hidden');
+        hintBanner.classList.remove('flex');
+        hintBtnLabel.textContent = 'Hint';
+      }
+
+      // Active Number for Board Highlighting
+      const activeNum = state.selectedIdx !== null && state.userBoard[state.selectedIdx] !== BLANK
+        ? state.userBoard[state.selectedIdx]
+        : null;
+
+      // Render 81 Cells
+      for (let i = 0; i < 81; i++) {
+        const cell = cellElements[i];
+        const val = state.userBoard[i];
+        const isGiven = state.initialBoard[i] !== BLANK;
+        const isSelected = state.selectedIdx === i;
+        const isHintTarget = state.activeHint && state.activeHint.idx === i;
+        const isPeer = state.selectedIdx !== null && PEERS[state.selectedIdx].includes(i);
+        const isSameNum = activeNum !== null && val === activeNum;
+
+        const isError = !isGiven && val !== BLANK && (
+          state.checkOnEntry ? val !== state.solution[i] : hasVisibleConflict(i)
+        );
+
+        // Background Color
+        let bg = dark ? 'bg-slate-900' : 'bg-white';
+        if (isHintTarget) {
+          bg = dark ? 'bg-amber-500/30 ring-2 ring-inset ring-amber-400' : 'bg-amber-200 ring-2 ring-inset ring-amber-500';
+        } else if (isSelected) {
+          bg = dark ? 'bg-indigo-600/45 ring-2 ring-inset ring-indigo-400' : 'bg-indigo-200 ring-2 ring-inset ring-indigo-600';
+        } else if (isError) {
+          bg = dark ? 'bg-rose-950/85' : 'bg-rose-100';
+        } else if (isSameNum) {
+          bg = dark ? 'bg-indigo-500/25' : 'bg-indigo-100';
+        } else if (isPeer) {
+          bg = dark ? 'bg-slate-800/75' : 'bg-slate-100/90';
+        }
+
+        // Preserve border classes while updating background
+        const r = getRow(i), c = getCol(i);
+        let borderClasses = 'sudoku-cell ';
+        if (c === 2 || c === 5) borderClasses += 'box-border-right ';
+        if (r === 2 || r === 5) borderClasses += 'box-border-bottom ';
+        if (c === 8) borderClasses += 'no-border-right ';
+        if (r === 8) borderClasses += 'no-border-bottom ';
+        cell.className = borderClasses + bg;
+
+        // Cell Content
+        if (val !== BLANK) {
+          let textColor = '';
+          if (isGiven) {
+            textColor = dark ? 'text-slate-100 font-bold' : 'text-slate-900 font-bold';
+          } else if (isError) {
+            textColor = dark ? 'text-rose-400 font-bold' : 'text-rose-600 font-bold';
+          } else {
+            textColor = dark ? 'text-indigo-400 font-semibold' : 'text-indigo-600 font-semibold';
+          }
+          cell.innerHTML = `<span class="cell-digit ${textColor}">${val}</span>`;
+        } else {
+          const cellNotes = state.notes[i];
+          if (cellNotes && cellNotes.length > 0) {
+            let notesHTML = '<div class="notes-grid">';
+            for (let n = 1; n <= 9; n++) {
+              const has = cellNotes.includes(n);
+              const hi = activeNum === n;
+              const cls = has
+                ? (hi ? 'text-amber-400 font-extrabold scale-110' : (dark ? 'text-slate-400' : 'text-slate-600'))
+                : 'opacity-0';
+              notesHTML += `<span class="note-digit ${cls}">${n}</span>`;
+            }
+            notesHTML += '</div>';
+            cell.innerHTML = notesHTML;
+          } else {
+            cell.innerHTML = '';
+          }
+        }
+      }
+
+      // Toolbar Buttons Styling
+      const undoBtn = document.getElementById('undo-btn');
+      undoBtn.disabled = state.history.length === 0;
+
+      const notesBtn = document.getElementById('notes-toggle-btn');
+      const notesBadge = document.getElementById('notes-badge');
+      if (state.isNoteMode) {
+        notesBtn.className = 'tool-btn relative flex flex-col items-center justify-center py-2 px-2 rounded-xl border bg-indigo-600 border-indigo-500 text-white shadow-lg shadow-indigo-600/25 transition-all active:scale-95';
+        notesBadge.className = 'absolute top-1.5 right-2 text-[9px] font-extrabold px-1.5 py-0.2 rounded-full uppercase bg-white text-indigo-700';
+        notesBadge.textContent = 'ON';
+      } else {
+        notesBtn.className = `tool-btn relative flex flex-col items-center justify-center py-2 px-2 rounded-xl border transition-all active:scale-95 ${
+          dark ? 'border-slate-800 bg-slate-900 hover:bg-slate-800 text-slate-200' : 'border-slate-200 bg-white hover:bg-slate-100 text-slate-700 shadow-sm'
+        }`;
+        notesBadge.className = `absolute top-1.5 right-2 text-[9px] font-extrabold px-1.5 py-0.2 rounded-full uppercase ${
+          dark ? 'bg-slate-800 text-slate-400' : 'bg-slate-200 text-slate-600'
+        }`;
+        notesBadge.textContent = 'OFF';
+      }
+
+      // Update Number Pad Counts & Appearance
+      const counts = new Array(10).fill(0);
+      for (let i = 0; i < 81; i++) {
+        const v = state.userBoard[i];
+        if (v !== BLANK && (!state.checkOnEntry || v === state.solution[i])) {
+          counts[v]++;
+        }
+      }
+
+      for (let n = 1; n <= 9; n++) {
+        const btn = numpadButtons[n - 1];
+        const rem = Math.max(0, 9 - counts[n]);
+        const isDone = rem === 0;
+        const isHi = activeNum === n;
+
+        btn.querySelector('.rem-count').textContent = rem;
+
+        if (state.isNoteMode) {
+          btn.className = `h-14 rounded-xl font-bold flex flex-col items-center justify-center transition-all active:scale-90 border ${
+            dark ? 'bg-slate-900 border-indigo-500/40 text-indigo-300 hover:bg-slate-800' : 'bg-indigo-50 border-indigo-300 text-indigo-700'
+          }`;
+        } else if (isHi) {
+          btn.className = 'h-14 rounded-xl font-bold flex flex-col items-center justify-center transition-all active:scale-90 border bg-indigo-600 border-indigo-500 text-white shadow-md shadow-indigo-600/25';
+        } else if (isDone) {
+          btn.className = `h-14 rounded-xl font-bold flex flex-col items-center justify-center transition-all active:scale-90 border ${
+            dark ? 'bg-slate-900/35 border-slate-800/50 text-slate-600' : 'bg-slate-100 border-slate-200 text-slate-400'
+          }`;
+        } else {
+          btn.className = `h-14 rounded-xl font-bold flex flex-col items-center justify-center transition-all active:scale-90 border ${
+            dark ? 'bg-slate-900 border-slate-800 text-slate-100 hover:bg-slate-800' : 'bg-white border-slate-200 text-slate-800 hover:bg-slate-100 shadow-sm'
+          }`;
+        }
+      }
+    }
+
+    /**************************************************************
+     * 5. USER INTERACTIONS & GAMEPLAY LOGIC
+     **************************************************************/
+    function selectCell(idx) {
+      if (state.isPaused || state.isCompleted) return;
+      state.selectedIdx = idx;
+      renderAll();
+    }
+
+    function pushUndoState() {
+      state.history.push({
+        userBoard: [...state.userBoard],
+        notes: state.notes.map(arr => [...arr])
+      });
+      if (state.history.length > 50) state.history.shift();
+    }
+
+    function handleNumberInput(num) {
+      if (state.selectedIdx === null || state.isPaused || state.isCompleted) return;
+      const idx = state.selectedIdx;
+      if (state.initialBoard[idx] !== BLANK) return; // Given clue cannot be changed
+
+      // 1. PENCIL NOTES MODE
+      if (state.isNoteMode) {
+        pushUndoState();
+        if (state.userBoard[idx] !== BLANK) {
+          state.userBoard[idx] = BLANK;
+        }
+        const curr = state.notes[idx];
+        if (curr.includes(num)) {
+          state.notes[idx] = curr.filter(x => x !== num);
+        } else {
+          state.notes[idx] = [...curr, num].sort((a, b) => a - b);
+        }
+        saveGameState();
+        renderAll();
+        return;
+      }
+
+      // 2. NORMAL NUMBER ENTRY MODE
+      pushUndoState();
+      if (state.userBoard[idx] === num) {
+        state.userBoard[idx] = BLANK;
+      } else {
+        state.userBoard[idx] = num;
+        if (state.checkOnEntry && num !== state.solution[idx]) {
+          state.mistakes++;
+        }
+        // Clear notes in this cell & remove candidate `num` from all peers
+        state.notes[idx] = [];
+        for (let peer of PEERS[idx]) {
+          state.notes[peer] = state.notes[peer].filter(n => n !== num);
+        }
+      }
+
+      if (state.activeHint && state.activeHint.idx === idx) {
+        state.activeHint = null;
+      }
+
+      checkBoardCompletion();
+      saveGameState();
+      renderAll();
+    }
+
+    function handleErase() {
+      if (state.selectedIdx === null || state.isPaused || state.isCompleted) return;
+      const idx = state.selectedIdx;
+      if (state.initialBoard[idx] !== BLANK) return;
+      if (state.userBoard[idx] === BLANK && state.notes[idx].length === 0) return;
+
+      pushUndoState();
+      state.userBoard[idx] = BLANK;
+      state.notes[idx] = [];
+      state.activeHint = null;
+      saveGameState();
+      renderAll();
+    }
+
+    function handleUndo() {
+      if (state.history.length === 0 || state.isPaused || state.isCompleted) return;
+      const prev = state.history.pop();
+      state.userBoard = prev.userBoard;
+      state.notes = prev.notes;
+      state.activeHint = null;
+      saveGameState();
+      renderAll();
+    }
+
+    function toggleNoteMode() {
+      if (state.isPaused || state.isCompleted) return;
+      state.isNoteMode = !state.isNoteMode;
+      renderAll();
+    }
+
+    function fillAutoNotes() {
+      if (state.isPaused || state.isCompleted) return;
+      pushUndoState();
+      for (let i = 0; i < 81; i++) {
+        if (state.userBoard[i] === BLANK) {
+          state.notes[i] = getValidCandidates(state.userBoard, i);
+        } else {
+          state.notes[i] = [];
+        }
+      }
+      saveGameState();
+      renderAll();
+    }
+
+    function handleHint() {
+      if (state.isPaused || state.isCompleted) return;
+      if (state.activeHint) {
+        applyActiveHint();
+        return;
+      }
+      const hint = findLogicalHint(state.userBoard, state.solution);
+      if (hint) {
+        state.activeHint = hint;
+        state.selectedIdx = hint.idx;
+        state.hintsUsed++;
+        saveGameState();
+        renderAll();
+      }
+    }
+
+    function applyActiveHint() {
+      if (!state.activeHint) return;
+      const { idx, num } = state.activeHint;
+      pushUndoState();
+      state.userBoard[idx] = num;
+      state.notes[idx] = [];
+      for (let peer of PEERS[idx]) {
+        state.notes[peer] = state.notes[peer].filter(n => n !== num);
+      }
+      state.selectedIdx = idx;
+      state.activeHint = null;
+      checkBoardCompletion();
+      saveGameState();
+      renderAll();
+    }
+
+    function closeHintBanner() {
+      state.activeHint = null;
+      renderAll();
+    }
+
+    function verifyCurrentBoard() {
+      let wrongCount = 0;
+      let firstWrong = -1;
+      for (let i = 0; i < 81; i++) {
+        if (state.userBoard[i] !== BLANK && state.userBoard[i] !== state.solution[i]) {
+          wrongCount++;
+          if (firstWrong === -1) firstWrong = i;
+        }
+      }
+      if (wrongCount === 0) {
+        state.activeHint = {
+          idx: state.selectedIdx || 0,
+          num: state.solution[state.selectedIdx || 0],
+          type: 'Board Verified Clean!',
+          message: 'Every number you have entered so far is 100% accurate. Keep going!'
+        };
+        document.getElementById('hint-apply-btn').classList.add('hidden');
+      } else {
+        state.selectedIdx = firstWrong;
+        state.activeHint = {
+          idx: firstWrong,
+          num: state.solution[firstWrong],
+          type: `${wrongCount} Incorrect Entries Found`,
+          message: `Row ${getRow(firstWrong) + 1}, Col ${getCol(firstWrong) + 1} has an inaccurate guess (${state.userBoard[firstWrong]}).`
+        };
+        document.getElementById('hint-apply-btn').classList.remove('hidden');
+      }
+      renderAll();
+    }
+
+    function checkBoardCompletion() {
+      for (let i = 0; i < 81; i++) {
+        if (state.userBoard[i] !== state.solution[i]) return;
+      }
+      state.isCompleted = true;
+      state.activeHint = null;
+      document.getElementById('victory-time').textContent = formatTime(state.timer);
+      document.getElementById('victory-diff').textContent = state.difficulty;
+      document.getElementById('victory-hints').textContent = state.hintsUsed;
+      const vModal = document.getElementById('victory-modal');
+      vModal.classList.remove('hidden');
+      vModal.classList.add('flex');
+    }
+
+    function startNewGame(difficulty = state.difficulty) {
+      closeNewGameModal();
+      const vModal = document.getElementById('victory-modal');
+      vModal.classList.add('hidden');
+      vModal.classList.remove('flex');
+
+      const genOverlay = document.getElementById('generating-overlay');
+      document.getElementById('generating-text').textContent = `Generating Unique ${difficulty} Puzzle...`;
+      genOverlay.classList.remove('hidden');
+      genOverlay.classList.add('flex');
+
+      setTimeout(() => {
+        const { puzzle, solution } = createUniquePuzzle(difficulty);
+        state.difficulty = difficulty;
+        state.initialBoard = [...puzzle];
+        state.userBoard = [...puzzle];
+        state.solution = [...solution];
+        state.notes = Array.from({ length: 81 }, () => []);
+        state.history = [];
+        state.timer = 0;
+        state.mistakes = 0;
+        state.hintsUsed = 0;
+        state.isPaused = false;
+        state.isCompleted = false;
+        state.activeHint = null;
+
+        const firstEmpty = puzzle.findIndex(v => v === 0);
+        state.selectedIdx = firstEmpty !== -1 ? firstEmpty : 0;
+
+        genOverlay.classList.add('hidden');
+        genOverlay.classList.remove('flex');
+        saveGameState();
+        renderAll();
+      }, 35);
+    }
+
+    function confirmSwitchDifficulty(diff) {
+      if (diff === state.difficulty) return;
+      startNewGame(diff);
+    }
+
+    function toggleCheckOnEntry(checked) {
+      state.checkOnEntry = checked;
+      document.getElementById('hint-apply-btn').classList.remove('hidden');
+      saveGameState();
+      renderAll();
+    }
+
+    function togglePause() {
+      if (state.isCompleted) return;
+      state.isPaused = !state.isPaused;
+      renderAll();
+    }
+
+    function toggleTheme() {
+      state.darkMode = !state.darkMode;
+      saveGameState();
+      renderAll();
+    }
+
+    /**************************************************************
+     * 6. MODALS & ONE-CLICK STANDALONE HTML EXPORT
+     **************************************************************/
+    function openNewGameModal() {
+      const m = document.getElementById('new-game-modal');
+      m.classList.remove('hidden');
+      m.classList.add('flex');
+    }
+    function closeNewGameModal() {
+      const m = document.getElementById('new-game-modal');
+      m.classList.add('hidden');
+      m.classList.remove('flex');
+    }
+    function playAgainSameDifficulty() {
+      startNewGame(state.difficulty);
+    }
+    function closeVictoryAndPickDifficulty() {
+      const vModal = document.getElementById('victory-modal');
+      vModal.classList.add('hidden');
+      vModal.classList.remove('flex');
+      openNewGameModal();
+    }
+    function openInstallModal() {
+      const m = document.getElementById('install-modal');
+      m.classList.remove('hidden');
+      m.classList.add('flex');
+    }
+    function closeInstallModal() {
+      const m = document.getElementById('install-modal');
+      m.classList.add('hidden');
+      m.classList.remove('flex');
+    }
+
+    // Packages the entire current HTML document into a downloadable index.html file
+    function downloadStandaloneHTML() {
+      const doctype = '<!DOCTYPE html>\n';
+      const htmlContent = doctype + document.documentElement.outerHTML;
+      const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'index.html';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    function copyCapacitorCommands() {
+      const text = document.getElementById('cap-commands').innerText;
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      const btn = document.getElementById('copy-cmd-btn');
+      btn.textContent = 'Copied!';
+      setTimeout(() => { btn.textContent = 'Copy Commands'; }, 2000);
+    }
+
+    /**************************************************************
+     * 7. KEYBOARD NAVIGATION & TIMER LOOP
+     **************************************************************/
+    window.addEventListener('keydown', (e) => {
+      if (state.isPaused || state.isCompleted) return;
+      if (!document.getElementById('install-modal').classList.contains('hidden')) return;
+      if (!document.getElementById('new-game-modal').classList.contains('hidden')) return;
+
+      if (e.key >= '1' && e.key <= '9') {
+        e.preventDefault();
+        handleNumberInput(parseInt(e.key, 10));
+      } else if (e.key === 'Backspace' || e.key === 'Delete') {
+        e.preventDefault();
+        handleErase();
+      } else if (e.key.toLowerCase() === 'n') {
+        e.preventDefault();
+        toggleNoteMode();
+      } else if (e.key.toLowerCase() === 'h') {
+        e.preventDefault();
+        handleHint();
+      } else if (e.key.toLowerCase() === 'z' && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        handleUndo();
+      } else if (state.selectedIdx !== null && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+        e.preventDefault();
+        let r = getRow(state.selectedIdx);
+        let c = getCol(state.selectedIdx);
+        if (e.key === 'ArrowUp') r = (r + 8) % 9;
+        if (e.key === 'ArrowDown') r = (r + 1) % 9;
+        if (e.key === 'ArrowLeft') c = (c + 8) % 9;
+        if (e.key === 'ArrowRight') c = (c + 1) % 9;
+        selectCell(r * 9 + c);
+      }
+    });
+
+    setInterval(() => {
+      if (!state.isPaused && !state.isCompleted) {
+        state.timer++;
+        const el = document.getElementById('timer-display');
+        if (el) el.textContent = formatTime(state.timer);
+        if (state.timer % 5 === 0) saveGameState();
+      }
+    }, 1000);
+
+    // Boot Application
+    window.onload = function () {
+      initDOMGrid();
+      const restored = loadSavedGameState();
+      if (restored) {
+        renderAll();
+      } else {
+        startNewGame('Medium');
+      }
+    };
+  </script>
+
+</body></html>
